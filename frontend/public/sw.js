@@ -1,5 +1,5 @@
-const CACHE_NAME = "chrome-remote-shell-v1";
-const SHELL_ASSETS = ["/", "/manifest.json"];
+const CACHE_NAME = "chrome-remote-shell-v2";
+const SHELL_ASSETS = ["./", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -19,7 +19,12 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  if (event.request.method !== "GET" || url.pathname.startsWith("/api/") || url.pathname.startsWith("/ws/")) {
+  if (
+    event.request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    url.pathname.includes("/api/") ||
+    url.pathname.includes("/ws/")
+  ) {
     return;
   }
 
@@ -32,6 +37,6 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./")))
   );
 });

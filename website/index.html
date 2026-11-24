@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <meta name="description" content="Download Chrome Remote Control v1.0 for Windows, macOS, and Linux. Control Google Chrome, live tabs, YouTube/Netflix, a <20ms multi-touch trackpad, voice typing, and live screen preview from your phone via QR." />
+  <meta name="description" content="Low-latency Wi-Fi & WebRTC remote control for Google Chrome and your PC from any phone. Scan the QR right inside the Chrome Extension popup with zero laptop scripts, or enable the silent Windows agent for OS mouse & power." />
   <meta name="theme-color" content="#080b12" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Chrome Remote Control v1.0 — Your browser and PC under your thumb" />
-  <meta property="og:description" content="Real-time MV3 tab manager, exact YouTube & Netflix scrubber, <20ms native trackpad, interactive Screen Spy, and true-black AMOLED PWA via QR code." />
+  <meta property="og:title" content="Chrome Remote Control v1.1 — Scan the Extension QR &amp; Control Everything" />
+  <meta property="og:description" content="Pair directly from the Chrome Extension popup via WebRTC with zero laptop setup, plus optional invisible Windows agent for OS mouse, master audio &amp; PC shutdown." />
   <meta property="og:image" content="icon.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <title>Chrome Remote Control v1.0 — Total Google Chrome &amp; PC Remote Control from Your Phone</title>
+  <title>Chrome Remote Control v1.1 — Instant Extension QR &amp; PC Remote from Your Phone</title>
   <link rel="preload" href="plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="icon" href="icon.png" />
   <link rel="stylesheet" href="styles.css" />
@@ -20,9 +20,9 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Chrome Remote Control",
-    "operatingSystem": "Windows 10, Windows 11, macOS, Linux",
+    "operatingSystem": "Chrome, Windows 10, Windows 11, macOS, Linux",
     "applicationCategory": "UtilitiesApplication",
-    "softwareVersion": "1.0.0",
+    "softwareVersion": "1.1.0",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
@@ -42,7 +42,7 @@
         <a class="brand" href="#hero-section" aria-current="page" aria-label="Chrome Remote Control, home">
           <img src="icon.png" fetchpriority="high" decoding="async" width="34" height="34" alt="" />
           <span>Chrome Remote</span>
-          <small class="ver-pill">v1.0</small>
+          <small class="ver-pill">v1.1</small>
         </a>
 
         <nav class="site-nav" aria-label="Primary">
@@ -59,10 +59,10 @@
 
           <ul id="site-menu" class="site-menu" popover="auto">
             <li><a href="#features">Features</a></li>
-            <li><a href="#setups">Use Cases</a></li>
-            <li><a href="#modes">Modes</a></li>
+            <li><a href="#modes">Dual Mode</a></li>
             <li><a href="#setup-guide">Setup</a></li>
             <li><a href="#faq">FAQ</a></li>
+            <li><a href="app/">Web Remote</a></li>
             <li><a href="https://github.com/raults32/ChromeRemoteControl" target="_blank" rel="noopener">GitHub</a></li>
           </ul>
         </nav>
@@ -74,28 +74,34 @@
     <!-- HERO WITH LIVE INTERACTIVE PC + AMOLED PHONE DEMO -->
     <section id="hero-section" class="shell hero" aria-labelledby="headline">
       <div class="intro">
-        <p class="label">WINDOWS 10/11 · MV3 EXTENSION · MOBILE AMOLED PWA</p>
+        <p class="label">INSTANT EXTENSION QR · WEBRTC P2P · OPTIONAL SILENT WINDOWS AGENT</p>
         <h1 id="headline">
           <span>Your Chrome &amp; PC,</span><br />
           <span>under </span><em>your thumb.</em>
         </h1>
         <p>
-          Manage live open tabs, scrub or skip intros on YouTube &amp; Netflix, glide the cursor under 20 ms, dictate via voice, and peek at your PC screen from Android or iPhone by scanning a single QR code.
+          Click the Chrome Extension icon, scan its QR code with your phone, and control live tabs, YouTube &amp; Netflix, in-page cursor, voice search, and tab previews immediately—with <strong>zero terminal windows</strong> on your laptop.
         </p>
         <div class="cta-row">
           <a
             class="button"
-            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.0.0.zip"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Extension-v1.1.0.zip"
             data-dl-link
           >
-            Download for Windows
+            Download Chrome Extension
           </a>
-          <a class="button-ghost" href="#setup-guide">Setup guide</a>
+          <a
+            class="button-ghost"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.1.0.zip"
+            data-dl-link
+          >
+            Full Windows Bundle
+          </a>
         </div>
         <ul class="trust-badges" aria-label="Technical highlights">
-          <li>✓ &lt; 20 ms Wi-Fi latency</li>
-          <li>✓ Zero App Store installs</li>
-          <li>✓ 100% local LAN + PIN auth</li>
+          <li>✓ QR built right into Chrome Extension</li>
+          <li>✓ Zero laptop scripts required</li>
+          <li>✓ Optional silent Windows autostart</li>
         </ul>
       </div>
 
@@ -167,55 +173,55 @@
             </div>
           </div>
         </div>
-        <figcaption id="demo-caption">✨ Tap the scenes above or «⏭ Skip Intro» to preview instant WebSocket response</figcaption>
+        <figcaption id="demo-caption">✨ Tap the scenes above or «⏭ Skip Intro» to preview instant remote response</figcaption>
       </figure>
     </section>
 
-    <!-- CORE MODULES HIGHLIGHTS STRIP (CSS Subgrid aligned) -->
+    <!-- CORE MODULES HIGHLIGHTS STRIP -->
     <section id="features" class="strip" aria-labelledby="feat-heading">
       <div class="shell">
-        <h2 id="feat-heading" class="label section-label">HYBRID 3-COMPONENT ARCHITECTURE</h2>
+        <h2 id="feat-heading" class="label section-label">DUAL WEBRTC + LOCAL OS ARCHITECTURE</h2>
         <div class="strip-inner grid-6">
           <article class="feat-card reveal-card">
-            <span class="feat-tag">MV3 EXTENSION</span>
+            <span class="feat-tag">QR IN EXTENSION</span>
+            <h3>1-Click Extension QR Pairing</h3>
+            <p>Click the Chrome toolbar icon and scan the QR code with your phone. Connects peer-to-peer over WebRTC with zero Python or terminal scripts needed on your laptop.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag">MV3 TABS</span>
             <h3>Real-Time Tab &amp; Window Manager</h3>
-            <p>View every open Chrome tab with its live favicon, title, and domain even while Chrome is minimized. Switch, close, pin, duplicate, mute individual tabs, or reopen closed tabs in one tap.</p>
+            <p>View every open Chrome tab with its live favicon, title, and audio state even while Chrome is minimized. Switch, close, pin, duplicate, mute, or reopen tabs in one tap.</p>
           </article>
 
           <article class="feat-card reveal-card">
             <span class="feat-tag">MULTIMEDIA</span>
             <h3>Precision Scrubber &amp; Skip Intro</h3>
-            <p>Control YouTube, Netflix, Twitch, Disney+, and any HTML5 video with a live timeline scrubber, ±5s/10s/30s jumps, playback speeds, captions, PiP, and smart Ad/Intro skipping.</p>
+            <p>Control YouTube, Netflix, Twitch, Disney+, and HTML5 video with a live timeline scrubber, ±5s/10s/30s jumps, playback speeds, captions, PiP, and smart Ad/Intro skipping.</p>
           </article>
 
           <article class="feat-card reveal-card">
-            <span class="feat-tag">&lt; 20 MS</span>
-            <h3>Native Multi-Touch Trackpad</h3>
-            <p>Direct Win32 SendInput engine with sub-pixel accumulation: smooth cursor acceleration, double-tap drag &amp; drop, two-finger scrolling, and pinch-to-zoom.</p>
-          </article>
-
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">KEYBOARD + VOICE</span>
-            <h3>Live Typing, Voice &amp; Clipboard</h3>
-            <p>Type straight from your phone keyboard with full international Unicode &amp; emoji support, dictate searches by voice, and sync clipboard text both ways instantaneously.</p>
+            <span class="feat-tag">&lt; 15 MS</span>
+            <h3>Dual Trackpad (In-Page &amp; Win32)</h3>
+            <p>Glide a glowing virtual cursor inside web pages with zero setup, or enable the silent Windows agent for full OS-wide Win32 SendInput desktop cursor control.</p>
           </article>
 
           <article class="feat-card reveal-card">
             <span class="feat-tag">INTERACTIVE</span>
-            <h3>Live «Screen Spy» Mode</h3>
-            <p>Sitting across the room? Stream lightweight compressed frames (5–15 FPS) to your phone and tap anywhere on the live preview to click that exact spot on your PC.</p>
+            <h3>Live «Screen Spy» Preview</h3>
+            <p>Sitting across the room? Stream live tab screenshots (or your full Windows desktop) straight to your phone and tap anywhere on the preview to click that exact spot.</p>
           </article>
 
           <article class="feat-card reveal-card">
-            <span class="feat-tag">SYSTEM</span>
-            <h3>Macros, Sleep Timer &amp; System Tray</h3>
-            <p>Trigger custom scenes (like «Cinema Mode»), schedule PC sleep or shutdown in 30/60 minutes before falling asleep, and manage QR &amp; PIN from the Windows system tray.</p>
+            <span class="feat-tag">SET &amp; FORGET</span>
+            <h3>Invisible Windows Auto-Start</h3>
+            <p>Want PC Shutdown, Sleep Timer &amp; Windows Master Volume? Run install-silent-startup.bat once—it starts invisibly with Windows (pythonw, zero console windows).</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- USE-CASE SCENARIOS — Below-the-fold content-visibility + Subgrid -->
+    <!-- USE-CASE SCENARIOS -->
     <section id="setups" class="shell setups deferred-section" aria-labelledby="setups-heading">
       <p class="label">ERGONOMIC ONE-HANDED UX</p>
       <h2 id="setups-heading">Total control from anywhere in the room.</h2>
@@ -223,17 +229,17 @@
         <article class="setup-card reveal-card">
           <div class="setup-icon" aria-hidden="true">🍿</div>
           <h3>From Your Couch or Bed</h3>
-          <p>Tap «Cinema Mode»: launch YouTube, set master volume to 80%, skip ads when detected, and set a 60-minute Sleep Timer so your PC suspends automatically after the movie.</p>
+          <p>Tap «Cinema Mode»: launch Netflix, adjust volume, skip intros automatically, and set a 45-minute Sleep Timer that pauses playback or suspends your PC when you fall asleep.</p>
+        </article>
+        <article class="setup-card reveal-card">
+          <div class="setup-icon" aria-hidden="true">⚡</div>
+          <h3>Persistent Phone Pairing</h3>
+          <p>Scan the QR code once and add the AMOLED Web App to your phone home screen. Next time you open it, your phone reconnects to Chrome automatically—no re-scanning needed.</p>
         </article>
         <article class="setup-card reveal-card">
           <div class="setup-icon" aria-hidden="true">🖥️</div>
           <h3>Second Monitor Multitasking</h3>
           <p>Switch tabs, pause a stream, or mute a noisy Chrome tab from your phone without pressing Alt+Tab or leaving your fullscreen game or editor.</p>
-        </article>
-        <article class="setup-card reveal-card">
-          <div class="setup-icon" aria-hidden="true">🎤</div>
-          <h3>Presentations &amp; Study Sessions</h3>
-          <p>Navigate slides, zoom pages, run Ctrl+F searches, or open favorite bookmarks while walking around the room with Screen Wake Lock active.</p>
         </article>
         <article class="setup-card reveal-card">
           <div class="setup-icon" aria-hidden="true">🌙</div>
@@ -246,56 +252,56 @@
     <!-- MODES COMPARISON -->
     <section id="modes" class="shell editions deferred-section" aria-labelledby="editions-heading">
       <div class="editions-head">
-        <p class="label">RESILIENCE &amp; DEPTH</p>
-        <h2 id="editions-heading">Works immediately, shines with the extension.</h2>
-        <p>Both modes are included free in the same download and switch automatically with zero configuration.</p>
+        <p class="label">CHOOSE YOUR DEPTH</p>
+        <h2 id="editions-heading">Zero laptop scripts by default. Full Windows OS control when you want it.</h2>
+        <p>Start with just the Chrome Extension in 15 seconds, and optionally add the silent Windows background agent anytime.</p>
       </div>
 
       <div class="editions-grid">
         <article class="plan-card reveal-card">
           <div class="plan-top">
             <div>
-              <h3>Direct OS Mode</h3>
+              <h3>Instant Extension Mode</h3>
             </div>
-            <span class="plan-price">Instant</span>
+            <span class="plan-price">Zero PC Setup</span>
           </div>
           <ul class="plan-list">
-            <li>Low-latency trackpad (&lt;20 ms), 2-finger scroll, drag &amp; drop, and zoom</li>
-            <li>Live Unicode keyboard (accents, symbols, emojis) &amp; Web Speech voice dictation</li>
-            <li>Master volume slider (Windows/macOS/Linux) &amp; two-way clipboard sync</li>
-            <li>Interactive «Screen Spy» preview, custom Macros, and Sleep Timer</li>
-            <li>Automatic OS keyboard shortcut fallback when Chrome extension is offline</li>
+            <li>QR code &amp; Room PIN generated directly inside the Chrome Extension popup</li>
+            <li>Direct encrypted WebRTC P2P connection to the hosted HTTPS AMOLED PWA</li>
+            <li>Live open tabs, windows, bookmarks, history, downloads &amp; omnibox search</li>
+            <li>Full YouTube / Netflix / HTML5 scrubber, Skip Intro, captions, speeds &amp; PiP</li>
+            <li>In-page virtual cursor, 2-finger page scroll, live typing &amp; active tab Screen Spy</li>
           </ul>
         </article>
 
         <article class="plan-card plan-pro reveal-card">
           <div class="plan-top">
             <div>
-              <span class="pro-pill">INCLUDED IN DOWNLOAD</span>
-              <h3>+ Chrome MV3 Extension Bridge</h3>
+              <span class="pro-pill">OPTIONAL 1-CLICK UPGRADE</span>
+              <h3>+ Silent Windows Agent</h3>
             </div>
-            <span class="plan-price">Full</span>
+            <span class="plan-price">Full OS</span>
           </div>
           <ul class="plan-list">
-            <li>Live list of all open tabs and windows with favicons, audio state, and Pin</li>
-            <li>Controls Chrome cleanly even when minimized or unfocused in the background</li>
-            <li>Exact second-by-second video Scrubber bar, PiP, Theater mode &amp; speeds</li>
-            <li>Automatic «Skip Intro / Ad» button detection on YouTube and Netflix</li>
-            <li>Direct mobile browser for Bookmarks, recent History, and Downloads</li>
+            <li>Runs invisibly on Windows login via pythonw.exe (zero black terminal windows)</li>
+            <li>Auto-detected by the Chrome Extension—upgrades your existing phone session live</li>
+            <li>Global OS-wide Win32 SendInput cursor outside Chrome across all desktop apps</li>
+            <li>Master Windows system volume (pycaw) &amp; full-desktop multi-monitor Screen Spy</li>
+            <li>Remote PC Lock, Sleep, Restart, Shut Down &amp; OS-level Sleep Timer</li>
           </ul>
         </article>
       </div>
     </section>
 
-    <!-- INSTALLATION STEPS + DECLARATIVE COPY COMMAND BUTTON -->
+    <!-- INSTALLATION STEPS -->
     <section id="setup-guide" class="shell install deferred-section" aria-labelledby="install-heading">
       <div>
-        <p class="label">QUICK START · 60 SECONDS</p>
+        <p class="label">QUICK START · 20 SECONDS</p>
         <h2 id="install-heading">
-          <span>From download</span><br />
-          <span>to scanning the QR code.</span>
+          <span>Click the extension.</span><br />
+          <span>Scan the QR. Done.</span>
         </h2>
-        <p>Zero cloud accounts required and nothing to install from mobile app stores.</p>
+        <p>No terminal commands required. Or clone the full repository if you also want the silent Windows OS agent.</p>
 
         <div class="cmd-card copyable">
           <span class="copy">
@@ -304,33 +310,33 @@
               class="copy-button"
               command="--copy"
               commandfor="install-cmd"
-              aria-label="Copy quick terminal command"
+              aria-label="Copy optional silent startup command"
             >
               <span class="copy-icon" aria-hidden="true"></span>
             </button>
             <span class="tip" role="status"></span>
           </span>
           <pre tabindex="0"><code id="install-cmd">git clone https://github.com/raults32/ChromeRemoteControl.git
-cd ChromeRemoteControl &amp;&amp; .\start.bat</code></pre>
+cd ChromeRemoteControl &amp;&amp; .\install-silent-startup.bat</code></pre>
         </div>
       </div>
 
       <ol>
         <li>
-          <h3>Extract and launch start.bat</h3>
-          <p>Download the release ZIP, extract it, and double-click start.bat (or ./start.sh on macOS/Linux). It sets up the environment automatically and launches the system tray icon.</p>
+          <h3>Load the Chrome Extension</h3>
+          <p>Download ChromeRemoteControl-Extension-v1.1.0.zip, extract it, open chrome://extensions, enable «Developer mode», and click «Load unpacked».</p>
         </li>
         <li>
-          <h3>Load the Chrome MV3 Bridge</h3>
-          <p>Open chrome://extensions, enable «Developer mode» in the top-right corner, click «Load unpacked», and select the included chrome-extension folder. The ON badge lights up right away.</p>
+          <h3>Click the Extension Icon &amp; Scan QR</h3>
+          <p>Click the Chrome Remote icon in your browser toolbar. Scan the displayed QR code with your phone camera—it opens the HTTPS Web Remote and pairs immediately.</p>
         </li>
         <li>
-          <h3>Scan the QR code from your phone</h3>
-          <p>On the same Wi-Fi network, scan the QR code shown in the console or via «View QR Code &amp; PIN» in the system tray to authorize a persistent session token.</p>
+          <h3>Save to Your Phone Home Screen</h3>
+          <p>Tap «Add to Home Screen» on iPhone or «Install App» on Android. Your pairing key stays saved so next time it connects in 1 tap without scanning again.</p>
         </li>
         <li>
-          <h3>Add to Home Screen (PWA)</h3>
-          <p>In Android Chrome tap «Install app» and in iPhone Safari tap «Share → Add to Home Screen» for a borderless fullscreen remote.</p>
+          <h3>Optional: Enable Silent Windows Agent</h3>
+          <p>Want OS-wide desktop cursor &amp; PC shutdown? Extract the Full Windows Bundle and double-click install-silent-startup.bat once—it starts invisibly with Windows forever.</p>
         </li>
       </ol>
     </section>
@@ -356,20 +362,20 @@ cd ChromeRemoteControl &amp;&amp; .\start.bat</code></pre>
 
       <div id="faq-accordion" class="faq-list">
         <details class="faq-item">
-          <summary>Does my data or screen ever leave my home network?</summary>
-          <p>Never. All WebSocket traffic stays strictly inside your local Wi-Fi network between your phone and PC, guarded by PIN verification and session tokens.</p>
+          <summary>Do I need to run any script on my laptop every time?</summary>
+          <p>No! With v1.1 Instant Extension Mode, Chrome itself hosts the WebRTC bridge and displays the QR code right in the extension popup. And if you also install the optional Windows Agent via install-silent-startup.bat, it starts invisibly with Windows so you never touch a script again.</p>
         </details>
         <details class="faq-item">
-          <summary>What if I use another browser or have not loaded the extension yet?</summary>
-          <p>The backend automatically falls back to native OS shortcuts so the trackpad, keyboard, audio, screen spy, navigation, and basic playback keys continue working seamlessly.</p>
+          <summary>Do I have to scan the QR code every day?</summary>
+          <p>No. Once you scan the QR code once and add the PWA to your phone's home screen, your encrypted pairing key is remembered—opening the app reconnects to your Chrome browser automatically.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is my connection private and encrypted?</summary>
+          <p>Yes. WebRTC DataChannels are end-to-end encrypted via DTLS/SCTP directly between your phone and your browser, guarded by your unique 96-bit pairing key or PIN.</p>
         </details>
         <details class="faq-item">
           <summary>Does «Screen Spy» consume CPU when closed?</summary>
-          <p>Zero percent. Screen capture stays completely idle until you actively open the «Screen Spy» view on your phone.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What are the system requirements?</summary>
-          <p>Python 3.11+ on your PC (the mobile PWA is already prebuilt inside the release package) and any modern browser on Android or iOS connected to the same Wi-Fi.</p>
+          <p>Zero percent. Tab or desktop capture stays completely idle until you actively toggle «Screen Spy» on your phone.</p>
         </details>
       </div>
     </section>
@@ -377,19 +383,26 @@ cd ChromeRemoteControl &amp;&amp; .\start.bat</code></pre>
     <!-- DOWNLOAD CTA -->
     <section id="download" class="shell download deferred-section" aria-labelledby="dl-heading">
       <div class="download-copy">
-        <p class="label">RELEASE v1.0.0 · WINDOWS / MACOS / LINUX</p>
-        <h2 id="dl-heading">Chrome Remote Control v1.0</h2>
-        <p>Complete ready-to-run package featuring the FastAPI WebSocket server, prebuilt AMOLED PWA, Manifest V3 Chrome extension, and system tray controller.</p>
+        <p class="label">RELEASE v1.1.0 · CHROME / WINDOWS / MACOS / LINUX</p>
+        <h2 id="dl-heading">Chrome Remote Control v1.1</h2>
+        <p>Download the standalone Chrome Extension for zero-setup QR pairing, or grab the Full Windows Bundle with the invisible auto-starting PC agent.</p>
         <div class="cta-row">
           <a
             class="button"
-            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.0.0.zip"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Extension-v1.1.0.zip"
             data-dl-link
           >
-            Download package (v1.0.0)
+            Extension Only (Zero Setup)
           </a>
-          <a class="secondary" href="https://github.com/raults32/ChromeRemoteControl/releases">
-            View release notes on GitHub
+          <a
+            class="secondary"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.1.0.zip"
+            data-dl-link
+          >
+            Full Windows Bundle (v1.1.0)
+          </a>
+          <a class="secondary" href="app/">
+            Open Web Remote App →
           </a>
         </div>
       </div>
@@ -397,8 +410,8 @@ cd ChromeRemoteControl &amp;&amp; .\start.bat</code></pre>
   </main>
 
   <footer class="shell footer">
-    <span>Chrome Remote Control v1.0</span>
-    <span>Open-source desktop &amp; Chrome remote for Windows, macOS &amp; Linux</span>
+    <span>Chrome Remote Control v1.1</span>
+    <span>Open-source WebRTC &amp; Wi-Fi remote for Google Chrome and your PC</span>
   </footer>
 </body>
 </html>

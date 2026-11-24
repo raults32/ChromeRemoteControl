@@ -707,7 +707,8 @@ async def ws_client_endpoint(websocket: WebSocket, token: str | None = Query(def
 @app.websocket("/ws/extension")
 async def ws_extension_endpoint(websocket: WebSocket) -> None:
     client_host = websocket.client.host if websocket.client else ""
-    if not auth_manager.is_loopback(client_host):
+    origin = (websocket.headers.get("origin") or "").lower()
+    if not auth_manager.is_loopback(client_host) or origin.startswith(("http://", "https://")):
         await websocket.accept()
         await websocket.close(code=4403, reason="Extension may only connect from localhost")
         return
@@ -796,6 +797,12 @@ async def serve_pwa(full_path: str) -> Response:
 
 
 def main() -> None:
+    windowless = sys.stdout is None or sys.stderr is None
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
     parser = argparse.ArgumentParser(description="Local server for Chrome Remote Control")
     parser.add_argument("--host", default=None, help="Bind host (default 0.0.0.0)")
     parser.add_argument("--port", type=int, default=None, help="TCP port (default 8765)")
@@ -818,7 +825,8 @@ def main() -> None:
     all_ips = get_all_lan_ips()
     pairing_url = build_pairing_url(lan_ip, port, secret)
 
-    print_startup_banner(lan_ip, port, pin, pairing_url, all_ips)
+    if not windowless:
+        print_startup_banner(lan_ip, port, pin, pairing_url, all_ips)
 
     global tray_app
     disable_tray = args.no_tray or os.environ.get("DISABLE_TRAY") == "1"
@@ -826,7 +834,13 @@ def main() -> None:
         tray_app = SystemTrayApp(on_exit_callback=lambda: None, main_script_path=Path(__file__).resolve())
         tray_app.start()
 
-    uvicorn.run(app, host=host, port=port, log_level="warning")
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level="warning",
+        log_config=None if windowless else uvicorn.config.LOGGING_CONFIG,
+    )
 
 
 if __name__ == "__main__":

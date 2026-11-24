@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Remote Control Bridge",
-  "version": "1.0.0",
-  "description": "Local WebSocket bridge for live Chrome tab management, bookmarks, and HTML5 media remote control.",
+  "name": "Chrome Remote Control",
+  "version": "1.1.0",
+  "description": "Instant QR & WebRTC remote control for Google Chrome and your PC from any smartphone — zero laptop setup required.",
   "minimum_chrome_version": "116",
   "permissions": [
     "tabs",
+    "activeTab",
     "bookmarks",
     "history",
     "downloads",
@@ -13,7 +14,9 @@
     "scripting",
     "storage",
     "alarms",
-    "offscreen"
+    "offscreen",
+    "clipboardRead",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "http://*/*",
@@ -25,7 +28,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Chrome Remote Control",
+    "default_title": "Chrome Remote Control — Click to Scan QR",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",

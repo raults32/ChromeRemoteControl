@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Compass, PlayCircle, Touchpad, Layers, SlidersHorizontal, Puzzle, X } from "lucide-react";
+import { Compass, PlayCircle, Touchpad, Layers, SlidersHorizontal, Puzzle, MonitorCheck, X } from "lucide-react";
 
 import AuthScreen from "./components/AuthScreen.jsx";
 import ChromePanel from "./components/ChromePanel.jsx";
@@ -13,7 +13,55 @@ import { useHaptics } from "./hooks/useHaptics.js";
 import { useWakeLock } from "./hooks/useWakeLock.js";
 import { useRemoteSocket } from "./hooks/useWebSocket.js";
 
-const TOKEN_STORAGE_KEY = "crc_session_token";
+const SESSION_STORAGE_KEY = "crc_session_v2";
+const LEGACY_TOKEN_KEY = "crc_session_token";
+
+function loadInitialSession() {
+  // Check URL first for instant 1-scan WebRTC QR (?room=...&key=...)
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get("room");
+    const key = params.get("key");
+    if (room && key) {
+      const ua = navigator.userAgent || "";
+      const deviceName = /iPhone/i.test(ua)
+        ? "iPhone"
+        : /iPad/i.test(ua)
+          ? "iPad"
+          : /Android/i.test(ua)
+            ? "Android"
+            : "Phone";
+      const rtcSession = {
+        mode: "webrtc",
+        roomCode: room.replace(/\D/g, ""),
+        key,
+        pin: "",
+        deviceName
+      };
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(rtcSession));
+      window.history.replaceState({}, "", window.location.pathname);
+      return rtcSession;
+    }
+  }
+
+  try {
+    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && (parsed.mode === "webrtc" || parsed.mode === "ws")) {
+        return parsed;
+      }
+    }
+  } catch (_e) {
+    // Ignore corrupt localStorage
+  }
+
+  const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY);
+  if (legacyToken) {
+    return { mode: "ws", token: legacyToken };
+  }
+  return null;
+}
 
 const NAV_ITEMS = [
   { id: "chrome", label: "Chrome", title: "Navigation & Omnibox", icon: Compass },
@@ -24,7 +72,8 @@ const NAV_ITEMS = [
 ];
 
 export default function App() {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY) || "");
+  const [sessionConfig, setSessionConfig] = useState(loadInitialSession);
+  const [authError, setAuthError] = useState("");
   const [pairingBusy, setPairingBusy] = useState(false);
   const [activeNav, setActiveNav] = useState("chrome");
   const [liveAnnouncement, setLiveAnnouncement] = useState("");
@@ -38,17 +87,23 @@ export default function App() {
   const { hapticsEnabled, toggleHaptics, vibrate } = useHaptics();
   const { wakeLockSupported, wakeLockEnabled, toggleWakeLock } = useWakeLock();
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    setToken("");
+  const handleLogout = useCallback((reason = "") => {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+    setSessionConfig(null);
+    setAuthError(typeof reason === "string" ? reason : "");
   }, []);
 
-  const handleAuthenticated = useCallback((newToken) => {
-    localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
-    setToken(newToken);
+  const handleAuthenticated = useCallback((nextSession) => {
+    setAuthError("");
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
+    if (nextSession?.mode === "ws" && nextSession.token) {
+      localStorage.setItem(LEGACY_TOKEN_KEY, nextSession.token);
+    }
+    setSessionConfig(nextSession);
   }, []);
 
-  // Automatic QR Pairing via /?pair=<secret> URL parameter
+  // Automatic Local Server QR Pairing via /?pair=<secret>
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pairSecret = params.get("pair");
@@ -57,18 +112,18 @@ export default function App() {
     setPairingBusy(true);
     (async () => {
       try {
-        const res = await fetch("/api/auth/login", {
+        const res = await fetch("./api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pairingSecret: pairSecret, deviceName: "Mobile (QR)" })
         });
         const data = await res.json();
         if (data?.token) {
-          handleAuthenticated(data.token);
-          window.history.replaceState({}, "", "/");
+          handleAuthenticated({ mode: "ws", token: data.token });
+          window.history.replaceState({}, "", window.location.pathname);
         }
       } catch (_err) {
-        // Fallback to manual PIN screen
+        // Fallback to manual AuthScreen
       } finally {
         setPairingBusy(false);
       }
@@ -76,16 +131,14 @@ export default function App() {
   }, [handleAuthenticated]);
 
   const { connectionState, latencyMs, serverState, toast, showToast, clearToast, send } =
-    useRemoteSocket(token, handleLogout);
+    useRemoteSocket(sessionConfig, handleLogout, handleAuthenticated);
 
-  // Dynamic SPA document.title updates (per accessibility §4)
   useEffect(() => {
     const currentItem = NAV_ITEMS.find((i) => i.id === activeNav) || NAV_ITEMS[0];
     const tabSuffix = activeNav === "tabs" ? ` (${serverState.tabs.length})` : "";
     document.title = `${currentItem.label}${tabSuffix} | Chrome Remote Control`;
   }, [activeNav, serverState.tabs.length]);
 
-  // Top-Layer Popover Toast lifecycle (per persistent-toast-notifications guide)
   const dismissToast = useCallback(
     (restoreFocus = false) => {
       if (toastTimerRef.current) {
@@ -97,7 +150,7 @@ export default function App() {
         try {
           pop.hidePopover();
         } catch (_e) {
-          // Ignore if already closed
+          // Ignore
         }
       }
       clearToast();
@@ -121,7 +174,7 @@ export default function App() {
       try {
         pop.showPopover();
       } catch (_e) {
-        // Ignore if already open
+        // Ignore
       }
     }
 
@@ -180,11 +233,20 @@ export default function App() {
     );
   }
 
-  if (!token) {
-    return <AuthScreen onAuthenticated={handleAuthenticated} vibrate={vibrate} />;
+  if (!sessionConfig) {
+    return <AuthScreen onAuthenticated={handleAuthenticated} initialError={authError} vibrate={vibrate} />;
   }
 
   const currentViewMeta = NAV_ITEMS.find((i) => i.id === activeNav) || NAV_ITEMS[0];
+  const isWebRtc = sessionConfig.mode === "webrtc";
+  const badgeActive = isWebRtc ? true : serverState.extensionConnected;
+  const badgeText = isWebRtc
+    ? serverState.pcAgentConnected
+      ? "Full PC + Chrome"
+      : "Chrome Direct"
+    : serverState.extensionConnected
+      ? "Extension Active"
+      : "Shortcut Mode";
 
   return (
     <div className="min-h-dvh bg-black text-zinc-100 flex flex-col">
@@ -193,7 +255,7 @@ export default function App() {
         {liveAnnouncement}
       </div>
 
-      {/* Persistent Top-Layer Toast Region (popover="manual") */}
+      {/* Persistent Top-Layer Toast Region */}
       <div role="region" aria-label="Notifications">
         <div
           id="remote-toast"
@@ -244,7 +306,7 @@ export default function App() {
                 ? serverState.paused
                   ? "Paused on PC"
                   : "Connected"
-                : "Reconnecting..."}
+                : "Connecting..."}
             </span>
             {connectionState === "connected" && latencyMs !== null && (
               <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full">
@@ -255,13 +317,19 @@ export default function App() {
 
           <div
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
-              serverState.extensionConnected
-                ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300"
-                : "bg-zinc-900 border-zinc-800 text-zinc-400"
+              serverState.pcAgentConnected && isWebRtc
+                ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                : badgeActive
+                  ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300"
+                  : "bg-zinc-900 border-zinc-800 text-zinc-400"
             }`}
           >
-            <Puzzle className="w-3 h-3" aria-hidden="true" />
-            <span>{serverState.extensionConnected ? "Extension Active" : "Shortcut Mode"}</span>
+            {serverState.pcAgentConnected && isWebRtc ? (
+              <MonitorCheck className="w-3 h-3" aria-hidden="true" />
+            ) : (
+              <Puzzle className="w-3 h-3" aria-hidden="true" />
+            )}
+            <span>{badgeText}</span>
           </div>
         </div>
       </header>
@@ -286,6 +354,7 @@ export default function App() {
         {activeNav === "system" && (
           <SystemPanel
             serverState={serverState}
+            sessionConfig={sessionConfig}
             send={send}
             vibrate={vibrate}
             showToast={showToast}
@@ -294,7 +363,7 @@ export default function App() {
             toggleWakeLock={toggleWakeLock}
             hapticsEnabled={hapticsEnabled}
             toggleHaptics={toggleHaptics}
-            onLogout={handleLogout}
+            onLogout={() => handleLogout("")}
           />
         )}
       </main>

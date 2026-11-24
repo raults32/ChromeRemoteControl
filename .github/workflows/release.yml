@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Release tag to publish (e.g. v1.0.0)"
+        description: "Release tag to publish (e.g. v1.1.0)"
         required: false
-        default: "v1.0.0"
+        default: "v1.1.0"
 
 permissions:
   contents: write
@@ -31,11 +31,17 @@ jobs:
           npm ci
           npm run build
 
-      - name: Package ready-to-run distribution
+      - name: Package Extension-Only & Full Windows distributions
         shell: pwsh
         run: |
           $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
-          if (-not $tag) { $tag = "v1.0.0" }
+          if (-not $tag) { $tag = "v1.1.0" }
+
+          # 1) Lightweight Chrome Extension ZIP (serverless instant WebRTC QR mode)
+          $extZip = "ChromeRemoteControl-Extension-$tag.zip"
+          Compress-Archive -Path "chrome-extension/*" -DestinationPath $extZip -Force
+
+          # 2) Full Windows Bundle (Extension + Silent Windows Agent + Prebuilt PWA)
           New-Item -ItemType Directory -Force -Path "release_stage/ChromeRemoteControl/backend" | Out-Null
           New-Item -ItemType Directory -Force -Path "release_stage/ChromeRemoteControl/frontend" | Out-Null
 
@@ -43,13 +49,17 @@ jobs:
           Copy-Item "backend/requirements.txt" "release_stage/ChromeRemoteControl/backend/" -Force
           Copy-Item "chrome-extension" "release_stage/ChromeRemoteControl/chrome-extension" -Recurse -Force
           Copy-Item "frontend/dist" "release_stage/ChromeRemoteControl/frontend/dist" -Recurse -Force
+          Copy-Item "install-silent-startup.bat" "release_stage/ChromeRemoteControl/" -Force
+          Copy-Item "uninstall-silent-startup.bat" "release_stage/ChromeRemoteControl/" -Force
           Copy-Item "start.bat" "release_stage/ChromeRemoteControl/" -Force
           Copy-Item "start.sh" "release_stage/ChromeRemoteControl/" -Force
           Copy-Item "README.md" "release_stage/ChromeRemoteControl/" -Force
 
-          $zipName = "ChromeRemoteControl-Windows-$tag.zip"
-          Compress-Archive -Path "release_stage/ChromeRemoteControl/*" -DestinationPath $zipName -Force
-          "ZIP_NAME=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $winZip = "ChromeRemoteControl-Windows-$tag.zip"
+          Compress-Archive -Path "release_stage/ChromeRemoteControl/*" -DestinationPath $winZip -Force
+
+          "EXT_ZIP=$extZip" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "WIN_ZIP=$winZip" | Out-File -FilePath $env:GITHUB_ENV -Append
           "REL_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Publish GitHub Release
@@ -59,7 +69,7 @@ jobs:
         run: |
           gh release view $env:REL_TAG >$null 2>$null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:REL_TAG $env:ZIP_NAME --clobber
+            gh release upload $env:REL_TAG $env:EXT_ZIP $env:WIN_ZIP --clobber
           } else {
-            gh release create $env:REL_TAG $env:ZIP_NAME --title "Chrome Remote Control $env:REL_TAG" --generate-notes --latest
+            gh release create $env:REL_TAG $env:EXT_ZIP $env:WIN_ZIP --title "Chrome Remote Control $env:REL_TAG" --generate-notes --latest
           }

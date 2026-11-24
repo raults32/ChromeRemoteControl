@@ -1,5 +1,7 @@
-// Content script injected into web pages for precise HTML5 / YouTube / Netflix / Twitch media control
-// and in-page text search. Uses async/await and batches DOM reads cleanly.
+// Content script injected into web pages for:
+// 1) Precision HTML5 / YouTube / Netflix / Twitch media control & Skip Intro/Ad
+// 2) In-page text search
+// 3) Browser-Only Mode Virtual Touchpad Cursor, Click, Scroll & Keyboard Input
 
 (() => {
   if (globalThis.__chromeRemoteMediaInjected) {
@@ -8,28 +10,368 @@
   globalThis.__chromeRemoteMediaInjected = true;
 
   const SKIP_SELECTORS = [
-    // YouTube Ads & Intro
     ".ytp-skip-ad-button",
     ".ytp-ad-skip-button",
     ".ytp-ad-skip-button-modern",
     ".ytp-ad-skip-button-slot button",
-    // Netflix Skip Intro / Recap / Next
     '[data-uia="player-skip-intro"]',
     '[data-uia="player-skip-recap"]',
     '[data-uia="player-skip-preplay"]',
-    // Prime Video / Disney+ / Generic
     ".skipElement",
     ".atvwebplayersdk-skipelement-button",
     "button.skip__button",
     '[aria-label*="Skip Intro" i]',
-    '[aria-label*="Saltar intro" i]',
-    '[aria-label*="Omitir intro" i]',
-    '[aria-label*="Saltar anuncio" i]'
+    '[aria-label*="Skip Ad" i]'
   ];
 
   let lastPushTime = 0;
   let boundMedia = null;
 
+  // Virtual In-Page Touchpad state (used when controlling Chrome without the PC Agent)
+  let cursorEl = null;
+  let cursorHideTimer = null;
+  let cursorX = Math.round((window.innerWidth || 1280) * 0.5);
+  let cursorY = Math.round((window.innerHeight || 720) * 0.5);
+
+  function ensureCursorElement() {
+    if (cursorEl && cursorEl.isConnected) return cursorEl;
+    const el = document.createElement("div");
+    el.id = "__crc_virtual_cursor";
+    el.setAttribute("aria-hidden", "true");
+    el.style.cssText = [
+      "position:fixed",
+      "left:0",
+      "top:0",
+      "width:22px",
+      "height:22px",
+      "margin-left:-11px",
+      "margin-top:-11px",
+      "border-radius:999px",
+      "background:rgba(6,182,212,0.32)",
+      "border:2px solid #22d3ee",
+      "box-shadow:0 0 0 2px rgba(0,0,0,0.65),0 0 16px rgba(34,211,238,0.75)",
+      "pointer-events:none",
+      "z-index:2147483647",
+      "transition:opacity 0.22s ease, transform 0.08s ease",
+      "opacity:0",
+      `transform:translate3d(${cursorX}px, ${cursorY}px, 0)`
+    ].join(";");
+    (document.documentElement || document.body).appendChild(el);
+    cursorEl = el;
+    return el;
+  }
+
+  function showVirtualCursor(pulse = false) {
+    const el = ensureCursorElement();
+    cursorX = Math.max(2, Math.min((window.innerWidth || 1280) - 2, cursorX));
+    cursorY = Math.max(2, Math.min((window.innerHeight || 720) - 2, cursorY));
+    el.style.opacity = "1";
+    el.style.transform = `translate3d(${Math.round(cursorX)}px, ${Math.round(cursorY)}px, 0) scale(${pulse ? 0.78 : 1})`;
+    if (pulse) {
+      setTimeout(() => {
+        if (cursorEl) {
+          cursorEl.style.transform = `translate3d(${Math.round(cursorX)}px, ${Math.round(cursorY)}px, 0) scale(1)`;
+        }
+      }, 95);
+    }
+    if (cursorHideTimer) clearTimeout(cursorHideTimer);
+    cursorHideTimer = setTimeout(() => {
+      if (cursorEl) cursorEl.style.opacity = "0";
+    }, 3500);
+  }
+
+  function clickAtPoint(x, y, button = "left") {
+    const target = document.elementFromPoint(x, y);
+    if (!target) return false;
+
+    if (
+      target instanceof HTMLElement &&
+      (target.matches("input, textarea, select, button, a, summary, [tabindex], [contenteditable='true']") ||
+        target.isContentEditable)
+    ) {
+      try {
+        target.focus({ preventScroll: true });
+      } catch (_e) {
+        // Ignore
+      }
+    }
+
+    const opts = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      view: window,
+      clientX: x,
+      clientY: y,
+      button: button === "right" ? 2 : 0,
+      buttons: button === "right" ? 2 : 1
+    };
+
+    target.dispatchEvent(new PointerEvent("pointerdown", opts));
+    target.dispatchEvent(new MouseEvent("mousedown", opts));
+    target.dispatchEvent(new PointerEvent("pointerup", { ...opts, buttons: 0 }));
+    target.dispatchEvent(new MouseEvent("mouseup", { ...opts, buttons: 0 }));
+
+    if (button === "right") {
+      target.dispatchEvent(new MouseEvent("contextmenu", opts));
+    } else if (typeof target.click === "function") {
+      target.click();
+    } else {
+      target.dispatchEvent(new MouseEvent("click", opts));
+    }
+    return true;
+  }
+
+  function scrollAtCursor(dx, dy) {
+    const stepX = -Number(dx || 0) * 52;
+    const stepY = -Number(dy || 0) * 52;
+    let node = document.elementFromPoint(cursorX, cursorY);
+    while (node && node !== document.body && node !== document.documentElement) {
+      if (node instanceof HTMLElement) {
+        const style = window.getComputedStyle(node);
+        const canY =
+          (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          node.scrollHeight > node.clientHeight + 4;
+        const canX =
+          (style.overflowX === "auto" || style.overflowX === "scroll") &&
+          node.scrollWidth > node.clientWidth + 4;
+        if ((canY && Math.abs(stepY) > 0.5) || (canX && Math.abs(stepX) > 0.5)) {
+          node.scrollBy({ left: stepX, top: stepY, behavior: "auto" });
+          return;
+        }
+      }
+      node = node.parentElement;
+    }
+    window.scrollBy({ left: stepX, top: stepY, behavior: "auto" });
+  }
+
+  function isEditableElement(el) {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    const tag = el.tagName;
+    if (tag === "TEXTAREA") return !el.readOnly && !el.disabled;
+    if (tag === "INPUT") {
+      const nonText = new Set(["button", "checkbox", "color", "file", "hidden", "image", "radio", "range", "reset", "submit"]);
+      return !nonText.has((el.type || "text").toLowerCase()) && !el.readOnly && !el.disabled;
+    }
+    return Boolean(el.isContentEditable);
+  }
+
+  function insertTextIntoActiveElement(text) {
+    if (!text) return false;
+    const el = document.activeElement;
+    if (!isEditableElement(el)) return false;
+
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+      const nextValue = el.value.slice(0, start) + text + el.value.slice(end);
+      const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+      if (setter) {
+        setter.call(el, nextValue);
+      } else {
+        el.value = nextValue;
+      }
+      const caret = start + text.length;
+      try {
+        el.setSelectionRange(caret, caret);
+      } catch (_e) {
+        // Ignore input types without selection range
+      }
+      el.dispatchEvent(new InputEvent("input", { bubbles: true, data: text, inputType: "insertText" }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+
+    if (el.isContentEditable) {
+      document.execCommand("insertText", false, text);
+      return true;
+    }
+    return false;
+  }
+
+  function handlePageKeyPress(rawKey) {
+    const key = String(rawKey || "").toLowerCase();
+    const el = document.activeElement;
+    const editable = isEditableElement(el);
+
+    if (key === "backspace") {
+      if (editable && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+        const start = el.selectionStart ?? el.value.length;
+        const end = el.selectionEnd ?? el.value.length;
+        if (start !== end) {
+          const next = el.value.slice(0, start) + el.value.slice(end);
+          el.value = next;
+          el.setSelectionRange(start, start);
+        } else if (start > 0) {
+          const next = el.value.slice(0, start - 1) + el.value.slice(end);
+          el.value = next;
+          el.setSelectionRange(start - 1, start - 1);
+        }
+        el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "deleteContentBackward" }));
+        return true;
+      }
+      if (editable && el.isContentEditable) {
+        document.execCommand("delete", false);
+        return true;
+      }
+      return false;
+    }
+
+    if (key === "delete") {
+      if (editable && el.isContentEditable) {
+        document.execCommand("forwardDelete", false);
+        return true;
+      }
+      return false;
+    }
+
+    if (key === "enter") {
+      if (el instanceof HTMLTextAreaElement) {
+        return insertTextIntoActiveElement("\n");
+      }
+      if (el instanceof HTMLInputElement) {
+        const keyEvt = { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true, cancelable: true };
+        el.dispatchEvent(new KeyboardEvent("keydown", keyEvt));
+        el.dispatchEvent(new KeyboardEvent("keyup", keyEvt));
+        if (el.form) {
+          if (typeof el.form.requestSubmit === "function") {
+            el.form.requestSubmit();
+          } else {
+            el.form.submit();
+          }
+        }
+        return true;
+      }
+      if (el instanceof HTMLElement && typeof el.click === "function" && el !== document.body) {
+        el.click();
+        return true;
+      }
+      return false;
+    }
+
+    if (key === "esc" || key === "escape") {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+        return true;
+      }
+      if (el instanceof HTMLElement) {
+        el.blur();
+      }
+      return true;
+    }
+
+    if (key === "space" && !editable) {
+      executeMediaAction("play_pause", {});
+      return true;
+    }
+
+    if (key === "up" && !editable) {
+      window.scrollBy({ top: -140, behavior: "smooth" });
+      return true;
+    }
+    if (key === "down" && !editable) {
+      window.scrollBy({ top: 140, behavior: "smooth" });
+      return true;
+    }
+    if (key === "left" && !editable) {
+      executeMediaAction("seek_relative", { delta: -5 });
+      return true;
+    }
+    if (key === "right" && !editable) {
+      executeMediaAction("seek_relative", { delta: 5 });
+      return true;
+    }
+    if (key === "pageup") {
+      window.scrollBy({ top: -Math.round(window.innerHeight * 0.82), behavior: "smooth" });
+      return true;
+    }
+    if (key === "pagedown") {
+      window.scrollBy({ top: Math.round(window.innerHeight * 0.82), behavior: "smooth" });
+      return true;
+    }
+    if (key === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return true;
+    }
+    if (key === "end") {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+      return true;
+    }
+    return false;
+  }
+
+  function handlePageInputCommand(action, payload = {}) {
+    if (action === "mouse_move") {
+      const sens = Number(payload.sensitivity || 1.7);
+      const dx = Number(payload.dx || 0) * sens;
+      const dy = Number(payload.dy || 0) * sens;
+      cursorX = Math.max(2, Math.min((window.innerWidth || 1280) - 2, cursorX + dx));
+      cursorY = Math.max(2, Math.min((window.innerHeight || 720) - 2, cursorY + dy));
+      showVirtualCursor(false);
+      return { ok: true };
+    }
+
+    if (action === "mouse_click") {
+      showVirtualCursor(true);
+      const count = Math.max(1, Number(payload.count || 1));
+      for (let i = 0; i < count; i += 1) {
+        clickAtPoint(cursorX, cursorY, payload.button || "left");
+      }
+      return { ok: true };
+    }
+
+    if (action === "screen_tap") {
+      const nx = Math.max(0, Math.min(1, Number(payload.normX ?? 0.5)));
+      const ny = Math.max(0, Math.min(1, Number(payload.normY ?? 0.5)));
+      cursorX = Math.round(nx * (window.innerWidth || 1280));
+      cursorY = Math.round(ny * (window.innerHeight || 720));
+      showVirtualCursor(true);
+      clickAtPoint(cursorX, cursorY, payload.button || "left");
+      return { ok: true };
+    }
+
+    if (action === "mouse_scroll") {
+      scrollAtCursor(payload.dx || 0, payload.dy || 0);
+      return { ok: true };
+    }
+
+    if (action === "key_type") {
+      const inserted = insertTextIntoActiveElement(String(payload.text || ""));
+      return { ok: inserted };
+    }
+
+    if (action === "key_press") {
+      return { ok: handlePageKeyPress(payload.key) };
+    }
+
+    if (action === "shortcut") {
+      const sc = String(payload.shortcut || "").toLowerCase();
+      if (sc === "select_all") {
+        const el = document.activeElement;
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          el.select();
+        } else {
+          document.execCommand("selectAll", false);
+        }
+      } else if (sc === "copy") {
+        document.execCommand("copy", false);
+      } else if (sc === "cut") {
+        document.execCommand("cut", false);
+      } else if (sc === "undo") {
+        document.execCommand("undo", false);
+      } else if (sc === "redo") {
+        document.execCommand("redo", false);
+      }
+      return { ok: true, selectedText: String(window.getSelection?.() || "") };
+    }
+
+    return { ok: false };
+  }
+
+  // ============================================================================
+  // HTML5 / Streaming Media Engine
+  // ============================================================================
   function isElementVisible(el) {
     if (!el) return false;
     const rect = el.getBoundingClientRect();
@@ -59,11 +401,9 @@
     const all = [...videos, ...audios];
     if (all.length === 0) return null;
 
-    // Prefer currently playing element
     const playing = all.find((m) => !m.paused && !m.ended && m.readyState >= 2);
     if (playing) return playing;
 
-    // Next prefer largest visible video with valid duration
     let bestVideo = null;
     let bestArea = -1;
     for (const v of videos) {
@@ -333,6 +673,12 @@
       return false;
     }
 
+    if (message.type === "PAGE_INPUT") {
+      const res = handlePageInputCommand(message.action, message.payload);
+      sendResponse(res);
+      return false;
+    }
+
     return false;
   });
 
@@ -355,7 +701,6 @@
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  // Initial detection
   const initial = selectActiveMediaElement();
   if (initial) {
     bindMediaListeners(initial);

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
 import {
   Volume2,
   VolumeX,
@@ -79,6 +80,7 @@ function legacyCopy(text) {
 
 export default function SystemPanel({
   serverState,
+  sessionConfig,
   send,
   vibrate,
   showToast,
@@ -199,12 +201,39 @@ export default function SystemPanel({
 
   const openQrDialog = async () => {
     vibrate?.(12);
-    const token = localStorage.getItem("crc_session_token") || "";
+    if (sessionConfig?.mode === "webrtc" && sessionConfig.roomCode) {
+      try {
+        const base = `${window.location.origin}${window.location.pathname}`;
+        const shareUrl = `${base}?room=${encodeURIComponent(sessionConfig.roomCode)}&key=${encodeURIComponent(sessionConfig.key || "")}`;
+        const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+          width: 220,
+          margin: 1,
+          color: { dark: "#09090b", light: "#ffffff" }
+        });
+        const r = String(sessionConfig.roomCode);
+        setPairingInfo({
+          mode: "webrtc",
+          qrDataUrl,
+          roomFormatted: r.length === 8 ? `${r.slice(0, 4)}-${r.slice(4)}` : r,
+          shareUrl
+        });
+        const dlg = qrDialogRef.current;
+        if (dlg && !dlg.open) {
+          dlg.returnValue = "";
+          dlg.showModal();
+        }
+      } catch (_err) {
+        showToast?.("Failed to generate QR code", "error");
+      }
+      return;
+    }
+
+    const token = sessionConfig?.token || localStorage.getItem("crc_session_token") || "";
     try {
-      const res = await fetch(`/api/pairing-info?token=${encodeURIComponent(token)}`);
+      const res = await fetch(`./api/pairing-info?token=${encodeURIComponent(token)}`);
       if (res.ok) {
         const info = await res.json();
-        setPairingInfo({ ...info, token });
+        setPairingInfo({ ...info, mode: "ws", token });
         const dlg = qrDialogRef.current;
         if (dlg && !dlg.open) {
           dlg.returnValue = "";
@@ -717,19 +746,39 @@ export default function SystemPanel({
         </h1>
         {pairingInfo && (
           <div className="space-y-3 text-center">
-            <p className="text-xs text-cyan-400 font-mono">
-              http://{pairingInfo.ip}:{pairingInfo.port}
-            </p>
-            <img
-              src={`/api/qr.png?token=${encodeURIComponent(pairingInfo.token)}`}
-              alt="QR code to pair another phone on your Wi-Fi network"
-              width="192"
-              height="192"
-              className="w-48 h-48 mx-auto rounded-2xl border border-zinc-800"
-            />
-            <p className="text-sm font-bold bg-black border border-zinc-800 rounded-xl py-2">
-              Current PIN: <span className="text-cyan-300 font-mono">{pairingInfo.pin}</span>
-            </p>
+            {pairingInfo.mode === "webrtc" ? (
+              <>
+                <p className="text-xs text-cyan-400 font-mono">
+                  Extension Room: {pairingInfo.roomFormatted}
+                </p>
+                <img
+                  src={pairingInfo.qrDataUrl}
+                  alt="QR code to pair another phone directly with your Chrome Extension"
+                  width="192"
+                  height="192"
+                  className="w-48 h-48 mx-auto rounded-2xl border border-zinc-800"
+                />
+                <p className="text-xs text-zinc-400">
+                  Scan from another phone to share this Chrome session instantly
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-cyan-400 font-mono">
+                  http://{pairingInfo.ip}:{pairingInfo.port}
+                </p>
+                <img
+                  src={`./api/qr.png?token=${encodeURIComponent(pairingInfo.token)}`}
+                  alt="QR code to pair another phone on your Wi-Fi network"
+                  width="192"
+                  height="192"
+                  className="w-48 h-48 mx-auto rounded-2xl border border-zinc-800"
+                />
+                <p className="text-sm font-bold bg-black border border-zinc-800 rounded-xl py-2">
+                  Current PIN: <span className="text-cyan-300 font-mono">{pairingInfo.pin}</span>
+                </p>
+              </>
+            )}
           </div>
         )}
         <form method="dialog" className="mt-4">
