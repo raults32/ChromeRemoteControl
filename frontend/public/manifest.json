@@ -1,7 +1,7 @@
 {
   "name": "Chrome Remote Control",
   "short_name": "ChromeRemote",
-  "description": "Control remoto total de baja latencia para Google Chrome y tu PC.",
+  "description": "Low-latency Wi-Fi remote control for Google Chrome and your PC.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

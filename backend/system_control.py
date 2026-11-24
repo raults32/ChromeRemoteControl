@@ -36,7 +36,7 @@ MOD_KEY = "cmd" if IS_MAC else "ctrl"
 SEARCH_ENGINES: dict[str, str] = {
     "google": "https://www.google.com/search?q={q}",
     "youtube": "https://www.youtube.com/results?search_query={q}",
-    "wikipedia": "https://es.wikipedia.org/w/index.php?search={q}",
+    "wikipedia": "https://en.wikipedia.org/w/index.php?search={q}",
     "chatgpt": "https://chatgpt.com/?q={q}",
     "duckduckgo": "https://duckduckgo.com/?q={q}",
     "github": "https://github.com/search?q={q}",
@@ -848,7 +848,7 @@ class SystemController:
 
         if act == "restart":
             if IS_WINDOWS:
-                subprocess.Popen(["shutdown", "/r", "/t", "5", "/c", "Reinicio solicitado por Chrome Remote Control"])
+                subprocess.Popen(["shutdown", "/r", "/t", "5", "/c", "Restart requested by Chrome Remote Control"])
             elif IS_MAC:
                 subprocess.Popen(["osascript", "-e", 'tell app "System Events" to restart'])
             elif IS_LINUX:
@@ -857,7 +857,7 @@ class SystemController:
 
         if act == "shutdown":
             if IS_WINDOWS:
-                subprocess.Popen(["shutdown", "/s", "/t", "5", "/c", "Apagado solicitado por Chrome Remote Control"])
+                subprocess.Popen(["shutdown", "/s", "/t", "5", "/c", "Shutdown requested by Chrome Remote Control"])
             elif IS_MAC:
                 subprocess.Popen(["osascript", "-e", 'tell app "System Events" to shut down'])
             elif IS_LINUX:
@@ -869,7 +869,7 @@ class SystemController:
                 subprocess.Popen(["shutdown", "/a"])
             return {"ok": True, "action": "cancel_shutdown"}
 
-        return {"ok": False, "error": f"Acción de energía desconocida: {action}"}
+        return {"ok": False, "error": f"Unknown power action: {action}"}
 
     @staticmethod
     def set_autostart(enabled: bool, script_path: str) -> bool:

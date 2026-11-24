@@ -11,11 +11,11 @@ CONFIG_PATH = BACKEND_DIR / "config.json"
 
 DEFAULT_MACROS: list[dict[str, Any]] = [
     {
-        "id": "modo-cine",
-        "name": "Modo Cine",
+        "id": "cinema-mode",
+        "name": "Cinema Mode",
         "icon": "film",
         "color": "#ef4444",
-        "description": "Abre YouTube, sube el volumen al 80% y activa pantalla completa",
+        "description": "Opens YouTube, sets PC volume to 80%, and toggles fullscreen",
         "steps": [
             {"type": "open_url", "value": "https://www.youtube.com"},
             {"type": "set_volume", "value": 80},
@@ -24,11 +24,11 @@ DEFAULT_MACROS: list[dict[str, Any]] = [
         ],
     },
     {
-        "id": "modo-trabajo",
-        "name": "Modo Trabajo",
+        "id": "work-mode",
+        "name": "Work Mode",
         "icon": "briefcase",
         "color": "#3b82f6",
-        "description": "Abre Gmail, Calendar y ChatGPT con volumen moderado (30%)",
+        "description": "Opens Gmail, Calendar, and ChatGPT with moderate volume (30%)",
         "steps": [
             {"type": "set_volume", "value": 30},
             {"type": "open_url", "value": "https://mail.google.com"},
@@ -37,11 +37,11 @@ DEFAULT_MACROS: list[dict[str, Any]] = [
         ],
     },
     {
-        "id": "modo-noche",
-        "name": "Modo Noche",
+        "id": "night-mode",
+        "name": "Night Mode",
         "icon": "moon",
         "color": "#8b5cf6",
-        "description": "Volumen suave al 15% y reproducción en pantalla completa",
+        "description": "Soft 15% master volume and fullscreen video playback",
         "steps": [
             {"type": "set_volume", "value": 15},
             {"type": "media_action", "value": "fullscreen"},
@@ -71,7 +71,7 @@ class ConfigManager:
                 "pin": _generate_pin(),
                 "pairing_secret": secrets.token_urlsafe(16),
                 "extension_key": secrets.token_urlsafe(24),
-                "authorized_tokens": {},  # token -> {"device_name": ..., "created_at": ...}
+                "authorized_tokens": {},
                 "paused": False,
                 "start_with_system": False,
                 "mouse": {
@@ -124,7 +124,7 @@ class ConfigManager:
     def set_pin(self, new_pin: str, revoke_sessions: bool = True) -> str:
         clean_pin = "".join(ch for ch in str(new_pin).strip() if ch.isdigit())
         if not (4 <= len(clean_pin) <= 6):
-            raise ValueError("El PIN debe tener entre 4 y 6 dígitos numéricos.")
+            raise ValueError("PIN must contain 4 to 6 numeric digits.")
         with self._lock:
             self.data["pin"] = clean_pin
             self.data["pairing_secret"] = secrets.token_urlsafe(16)

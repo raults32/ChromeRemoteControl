@@ -105,18 +105,18 @@ def render_ascii_qr(data: str) -> str:
 def print_startup_banner(ip: str, port: int, pin: str, pairing_url: str, all_ips: list[str]) -> None:
     sep = "=" * 66
     print(f"\n{sep}")
-    print("  CHROME REMOTE CONTROL - SERVIDOR LOCAL ACTIVO")
+    print("  CHROME REMOTE CONTROL - LOCAL SERVER ACTIVE")
     print(sep)
-    print(f"  URL Móvil (Wi-Fi):   http://{ip}:{port}")
+    print(f"  Mobile URL (Wi-Fi):  http://{ip}:{port}")
     if len(all_ips) > 1:
         others = ", ".join(f"http://{x}:{port}" for x in all_ips if x != ip)
-        print(f"  Otras IPs locales:   {others}")
-    print(f"  PIN de Acceso:       {pin}")
-    print("  Extensión Chrome:    ws://127.0.0.1:{}/ws/extension".format(port))
+        print(f"  Other Local IPs:     {others}")
+    print(f"  Access PIN:          {pin}")
+    print("  Chrome Extension:    ws://127.0.0.1:{}/ws/extension".format(port))
     print("-" * 66)
-    print("  Escanea este código QR con la cámara de tu celular:")
+    print("  Scan this QR code with your phone camera:")
     try:
         print(render_ascii_qr(pairing_url))
     except Exception:
-        print(f"  Enlace directo QR: {pairing_url}")
+        print(f"  Direct QR Link: {pairing_url}")
     print(sep + "\n")

@@ -23,33 +23,33 @@ import {
 const POWER_ACTIONS = [
   {
     id: "lock",
-    label: "Bloquear",
-    title: "¿Bloquear la pantalla de tu PC?",
-    desc: "Se cerrará la vista del escritorio hasta que ingreses tu contraseña de Windows/macOS.",
+    label: "Lock",
+    title: "Lock your PC screen?",
+    desc: "Your desktop will lock immediately until you enter your OS password.",
     icon: Lock,
     accent: "text-cyan-400"
   },
   {
     id: "suspend",
-    label: "Suspender",
-    title: "¿Suspender la computadora ahora?",
-    desc: "La PC entrará en modo de bajo consumo y se desconectará el control remoto.",
+    label: "Sleep",
+    title: "Put your PC to sleep now?",
+    desc: "Your computer will enter low-power sleep mode and disconnect the remote session.",
     icon: Moon,
     accent: "text-indigo-400"
   },
   {
     id: "restart",
-    label: "Reiniciar",
-    title: "¿Reiniciar la computadora?",
-    desc: "Se cerrarán las aplicaciones abiertas y el sistema se reiniciará en 5 segundos.",
+    label: "Restart",
+    title: "Restart your computer?",
+    desc: "Open applications will close and the system will reboot in 5 seconds.",
     icon: RotateCcw,
     accent: "text-amber-400"
   },
   {
     id: "shutdown",
-    label: "Apagar",
-    title: "¿Apagar la computadora?",
-    desc: "La PC se apagará por completo en 5 segundos. Guarda tus documentos antes de continuar.",
+    label: "Shut Down",
+    title: "Shut down your computer?",
+    desc: "Your PC will power off completely in 5 seconds. Save any open work before confirming.",
     icon: Power,
     accent: "text-rose-400"
   }
@@ -62,7 +62,6 @@ function formatCountdown(seconds) {
   return `${m}m ${String(rem).padStart(2, "0")}s`;
 }
 
-// Synchronous fallback for copying over non-HTTPS LAN origins (http://192.168.x.x:8765)
 function legacyCopy(text) {
   const previousFocus = document.activeElement;
   const field = Object.assign(document.createElement("textarea"), { value: text });
@@ -96,26 +95,22 @@ export default function SystemPanel({
   const [sleepMode, setSleepMode] = useState("suspend");
   const [pendingPower, setPendingPower] = useState(null);
 
-  // Accessible copy button state (per copy-button guide)
-  const [copyStatus, setCopyStatus] = useState(null); // 'ok' | 'fail' | null
+  const [copyStatus, setCopyStatus] = useState(null);
   const [copyTipText, setCopyTipText] = useState("");
   const lastCopyMsgRef = useRef("");
   const copyTimerRef = useRef(null);
 
-  // Macro creation form state
   const [macroName, setMacroName] = useState("");
   const [macroUrls, setMacroUrls] = useState("");
   const [macroVolume, setMacroVolume] = useState("70");
   const [macroFullscreen, setMacroFullscreen] = useState(false);
 
-  // QR & PIN info state
   const [pairingInfo, setPairingInfo] = useState(null);
 
   const powerDialogRef = useRef(null);
   const macroDialogRef = useRef(null);
   const qrDialogRef = useRef(null);
 
-  // Fallback for dialog[closedby="any"] light-dismiss in browsers without closedBy (per dialog guide)
   useEffect(() => {
     const dlg = qrDialogRef.current;
     if (!dlg || "closedBy" in HTMLDialogElement.prototype) return undefined;
@@ -192,14 +187,14 @@ export default function SystemPanel({
     send("system", "macro_save", {
       macro: {
         name: macroName.trim(),
-        description: `${urls.length} URL(s) • Vol ${macroVolume}%${macroFullscreen ? " • Pantalla completa" : ""}`,
+        description: `${urls.length} URL(s) • Vol ${macroVolume}%${macroFullscreen ? " • Fullscreen" : ""}`,
         steps
       }
     });
     setMacroName("");
     setMacroUrls("");
     macroDialogRef.current?.close();
-    showToast?.("Macro guardada", "success");
+    showToast?.("Macro saved", "success");
   };
 
   const openQrDialog = async () => {
@@ -217,7 +212,7 @@ export default function SystemPanel({
         }
       }
     } catch (_err) {
-      showToast?.("No se pudo obtener información del QR", "error");
+      showToast?.("Failed to load QR pairing info", "error");
     }
   };
 
@@ -233,13 +228,12 @@ export default function SystemPanel({
       }
     }
     if (!textToSend) {
-      showToast?.("Escribe o pega texto en el campo para enviarlo a la PC", "warning");
+      showToast?.("Type or paste text into the box first", "warning");
       return;
     }
     send("system", "clipboard_set", { text: textToSend, autoPaste });
   };
 
-  // Compliant copy action with external role="status" bubble, VoiceOver deduplication & LAN HTTP fallback
   const copyPcClipboardLocally = async () => {
     if (!clipboardText) return;
     vibrate?.(12);
@@ -252,7 +246,7 @@ export default function SystemPanel({
     }
 
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    let msg = ok ? "Copiado" : "Error al copiar";
+    let msg = ok ? "Copied" : "Copy failed";
     if (msg === lastCopyMsgRef.current) {
       msg += "\u00A0";
     }
@@ -274,7 +268,7 @@ export default function SystemPanel({
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            Audio Maestro del Sistema
+            System Master Audio
           </h2>
           <button
             type="button"
@@ -296,7 +290,7 @@ export default function SystemPanel({
 
         <div className="flex items-center gap-3">
           <label htmlFor="sys-master-volume" className="visually-hidden">
-            Volumen maestro del sistema
+            System master volume
           </label>
           <input
             id="sys-master-volume"
@@ -311,13 +305,13 @@ export default function SystemPanel({
         </div>
       </section>
 
-      {/* Bidirectional Clipboard */}
+      {/* Two-Way Clipboard */}
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          Portapapeles Bidireccional
+          Two-Way Clipboard
         </h2>
         <label htmlFor="mobile-clip-textarea" className="block text-xs text-zinc-300 font-medium">
-          Texto o URL para enviar a tu PC
+          Text or URL to send to your PC
         </label>
         <textarea
           id="mobile-clip-textarea"
@@ -325,7 +319,7 @@ export default function SystemPanel({
           rows={2}
           value={mobileClipInput}
           onChange={(e) => setMobileClipInput(e.target.value)}
-          placeholder="Pega aquí un enlace o texto de tu celular..."
+          placeholder="Paste a link or snippet from your phone..."
           className="w-full bg-black border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 placeholder:text-zinc-500"
         />
         <div className="grid grid-cols-2 gap-2">
@@ -335,7 +329,7 @@ export default function SystemPanel({
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-3 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5"
           >
             <ClipboardCopy className="w-4 h-4 text-cyan-400" aria-hidden="true" />
-            <span>Enviar a PC</span>
+            <span>Send to PC</span>
           </button>
           <button
             type="button"
@@ -343,7 +337,7 @@ export default function SystemPanel({
             className="bg-cyan-500/20 active:bg-cyan-500/30 border border-cyan-500/40 rounded-xl py-2.5 px-3 text-xs font-semibold text-cyan-300 flex items-center justify-center gap-1.5"
           >
             <ClipboardPaste className="w-4 h-4" aria-hidden="true" />
-            <span>Enviar y Pegar</span>
+            <span>Send & Paste</span>
           </button>
         </div>
 
@@ -356,12 +350,11 @@ export default function SystemPanel({
             }}
             className="w-full bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-3 text-xs font-semibold text-amber-300"
           >
-            Traer portapapeles actual de la PC
+            Fetch current PC clipboard
           </button>
           {clipboardText && (
             <div className="bg-black border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between gap-2">
               <code className="text-xs text-zinc-300 line-clamp-2 flex-1">{clipboardText}</code>
-              {/* Copy Button + External Live Region Bubble (per copy-button guide) */}
               <span className="copy-wrap shrink-0">
                 <button
                   type="button"
@@ -374,7 +367,7 @@ export default function SystemPanel({
                   ) : (
                     <ClipboardCopy className="w-3.5 h-3.5" aria-hidden="true" />
                   )}
-                  <span>Copiar</span>
+                  <span>Copy</span>
                 </button>
                 <span className="tip" role="status">
                   {copyTipText}
@@ -390,7 +383,7 @@ export default function SystemPanel({
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
-            Macros y Escenas
+            Macros & Scenes
           </h2>
           <button
             type="button"
@@ -398,7 +391,7 @@ export default function SystemPanel({
             className="bg-black border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-cyan-300 flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Crear Macro</span>
+            <span>New Macro</span>
           </button>
         </div>
 
@@ -423,7 +416,7 @@ export default function SystemPanel({
               </button>
               <button
                 type="button"
-                aria-label={`Eliminar macro ${macro.name}`}
+                aria-label={`Delete macro ${macro.name}`}
                 onClick={() => {
                   vibrate?.(12);
                   send("system", "macro_delete", { id: macro.id });
@@ -442,10 +435,10 @@ export default function SystemPanel({
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
             <Timer className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-            Temporizador (Sleep Timer)
+            Sleep Timer
           </h2>
           <label htmlFor="sleep-mode-select" className="visually-hidden">
-            Acción al finalizar el temporizador
+            Action when timer finishes
           </label>
           <select
             id="sleep-mode-select"
@@ -453,9 +446,9 @@ export default function SystemPanel({
             onChange={(e) => setSleepMode(e.target.value)}
             className="bg-black border border-zinc-800 rounded-xl px-2.5 py-1 text-xs text-zinc-200"
           >
-            <option value="suspend">Suspender PC</option>
-            <option value="shutdown">Apagar PC</option>
-            <option value="lock">Bloquear PC</option>
+            <option value="suspend">Sleep PC</option>
+            <option value="shutdown">Shut Down PC</option>
+            <option value="lock">Lock PC</option>
           </select>
         </div>
 
@@ -463,9 +456,9 @@ export default function SystemPanel({
           <div className="bg-amber-500/10 border border-amber-500/40 rounded-2xl p-3 flex items-center justify-between gap-2">
             <div>
               <p className="text-xs font-bold text-amber-300">
-                {sleepTimer.mode === "shutdown" ? "Apagado" : "Suspensión"} en {formatCountdown(sleepTimer.remainingSeconds)}
+                {sleepTimer.mode === "shutdown" ? "Shutting down" : sleepTimer.mode === "lock" ? "Locking" : "Sleeping"} in {formatCountdown(sleepTimer.remainingSeconds)}
               </p>
-              <p className="text-[11px] text-zinc-400">Ejecutándose en segundo plano en la PC</p>
+              <p className="text-[11px] text-zinc-400">Running in the background on your PC</p>
             </div>
             <button
               type="button"
@@ -475,7 +468,7 @@ export default function SystemPanel({
               }}
               className="bg-black border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-semibold text-amber-300"
             >
-              Cancelar
+              Cancel
             </button>
           </div>
         ) : (
@@ -497,7 +490,7 @@ export default function SystemPanel({
         )}
 
         <div className="pt-2 border-t border-zinc-800/80">
-          <span className="block text-[11px] text-zinc-400 mb-2">Energía (con confirmación de seguridad)</span>
+          <span className="block text-[11px] text-zinc-400 mb-2">Power actions (confirmation protected)</span>
           <div className="grid grid-cols-4 gap-2">
             {POWER_ACTIONS.map((item) => {
               const Icon = item.icon;
@@ -521,12 +514,12 @@ export default function SystemPanel({
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
           <Sliders className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
-          Sensibilidad y Ajustes Móviles
+          Sensitivity & Mobile Preferences
         </h2>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="sens-range" className="text-zinc-300">Sensibilidad del cursor</label>
+            <label htmlFor="sens-range" className="text-zinc-300">Cursor sensitivity</label>
             <span className="font-mono text-cyan-300">{Number(mouse.sensitivity || 1.6).toFixed(1)}x</span>
           </div>
           <input
@@ -542,7 +535,7 @@ export default function SystemPanel({
         </div>
 
         <label htmlFor="sw-invert-scroll" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
-          <span>Invertir dirección de scroll (Natural)</span>
+          <span>Invert scroll direction (Natural)</span>
           <input
             id="sw-invert-scroll"
             type="checkbox"
@@ -556,7 +549,7 @@ export default function SystemPanel({
           <label htmlFor="sw-wakelock" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
             <span className="flex items-center gap-2">
               <Sun className="w-4 h-4 text-amber-400" aria-hidden="true" />
-              Mantener pantalla encendida (Wake Lock)
+              Keep phone screen awake (Wake Lock)
             </span>
             <input
               id="sw-wakelock"
@@ -571,7 +564,7 @@ export default function SystemPanel({
         <label htmlFor="sw-haptics" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
           <span className="flex items-center gap-2">
             <Vibrate className="w-4 h-4 text-cyan-400" aria-hidden="true" />
-            Respuesta háptica al tocar botones
+            Haptic vibration on button press
           </span>
           <input
             id="sw-haptics"
@@ -589,7 +582,7 @@ export default function SystemPanel({
             className="bg-black border border-zinc-800 rounded-xl py-2.5 px-3 text-xs font-semibold text-cyan-300 flex items-center justify-center gap-1.5"
           >
             <QrCode className="w-4 h-4" aria-hidden="true" />
-            <span>Ver QR / PIN</span>
+            <span>View QR / PIN</span>
           </button>
           <button
             type="button"
@@ -597,7 +590,7 @@ export default function SystemPanel({
             className="bg-rose-950/40 border border-rose-900/50 rounded-xl py-2.5 px-3 text-xs font-semibold text-rose-300 flex items-center justify-center gap-1.5"
           >
             <LogOut className="w-4 h-4" aria-hidden="true" />
-            <span>Cerrar Sesión</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </section>
@@ -609,7 +602,7 @@ export default function SystemPanel({
         onClose={handlePowerDialogClose}
       >
         <h1 id="power-dialog-title" className="text-base font-bold text-zinc-100 mb-1.5">
-          {pendingPower?.title || "¿Confirmar acción de energía?"}
+          {pendingPower?.title || "Confirm power action?"}
         </h1>
         <p className="text-xs text-zinc-400 mb-5">
           {pendingPower?.desc}
@@ -620,13 +613,13 @@ export default function SystemPanel({
             autoFocus
             className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl py-2.5 text-xs font-semibold"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             value="confirm"
             className="bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-2.5 text-xs font-bold"
           >
-            Confirmar
+            Confirm
           </button>
         </form>
       </dialog>
@@ -634,12 +627,12 @@ export default function SystemPanel({
       {/* Native Modal Dialog for Creating Custom Macros */}
       <dialog ref={macroDialogRef} aria-labelledby="macro-dialog-title">
         <h1 id="macro-dialog-title" className="text-base font-bold text-zinc-100 mb-3">
-          Nueva Macro Personalizada
+          New Custom Macro
         </h1>
         <form method="post" action="/macro" onSubmit={handleSaveMacro} className="space-y-3">
           <div>
             <label htmlFor="macro-name" className="block text-xs text-zinc-300 mb-1">
-              Nombre de la escena <span aria-hidden="true">*</span>
+              Scene name <span aria-hidden="true">*</span>
             </label>
             <input
               id="macro-name"
@@ -648,13 +641,13 @@ export default function SystemPanel({
               required
               value={macroName}
               onChange={(e) => setMacroName(e.target.value)}
-              placeholder="Ej. Modo Estudio"
+              placeholder="e.g. Study Mode"
               className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100"
             />
           </div>
           <div>
             <label htmlFor="macro-urls" className="block text-xs text-zinc-300 mb-1">
-              URLs a abrir (separadas por coma o salto de línea)
+              URLs to open (comma or newline separated)
             </label>
             <textarea
               id="macro-urls"
@@ -671,7 +664,7 @@ export default function SystemPanel({
           </div>
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="macro-vol" className="text-xs text-zinc-300">
-              Volumen PC (0 a 100%)
+              PC Volume (0 to 100%)
             </label>
             <input
               id="macro-vol"
@@ -685,7 +678,7 @@ export default function SystemPanel({
             />
           </div>
           <label htmlFor="macro-fs" className="flex items-center justify-between gap-2 text-xs text-zinc-300 cursor-pointer">
-            <span>Activar pantalla completa (F11)</span>
+            <span>Toggle browser fullscreen (F11)</span>
             <input
               id="macro-fs"
               name="macroFullscreen"
@@ -701,13 +694,13 @@ export default function SystemPanel({
               onClick={() => macroDialogRef.current?.close()}
               className="bg-zinc-800 rounded-xl py-2.5 text-xs font-semibold text-zinc-200"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="bg-cyan-500 text-black rounded-xl py-2.5 text-xs font-bold"
             >
-              Guardar Macro
+              Save Macro
             </button>
           </div>
         </form>
@@ -720,7 +713,7 @@ export default function SystemPanel({
         aria-labelledby="qr-dialog-title"
       >
         <h1 id="qr-dialog-title" className="text-base font-bold text-zinc-100 text-center mb-1">
-          Emparejar otro celular
+          Pair Another Phone
         </h1>
         {pairingInfo && (
           <div className="space-y-3 text-center">
@@ -729,13 +722,13 @@ export default function SystemPanel({
             </p>
             <img
               src={`/api/qr.png?token=${encodeURIComponent(pairingInfo.token)}`}
-              alt="Código QR para emparejar otro teléfono en la red Wi-Fi"
+              alt="QR code to pair another phone on your Wi-Fi network"
               width="192"
               height="192"
               className="w-48 h-48 mx-auto rounded-2xl border border-zinc-800"
             />
             <p className="text-sm font-bold bg-black border border-zinc-800 rounded-xl py-2">
-              PIN actual: <span className="text-cyan-300 font-mono">{pairingInfo.pin}</span>
+              Current PIN: <span className="text-cyan-300 font-mono">{pairingInfo.pin}</span>
             </p>
           </div>
         )}
@@ -745,7 +738,7 @@ export default function SystemPanel({
             autoFocus
             className="w-full bg-cyan-500 text-black font-bold rounded-xl py-2.5 text-xs"
           >
-            Cerrar
+            Close
           </button>
         </form>
       </dialog>

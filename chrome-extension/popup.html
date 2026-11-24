@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="color-scheme" content="dark" />
@@ -99,20 +99,20 @@
       <span class="title">Remote Control Bridge</span>
       <span id="statusBadge" class="badge">
         <span class="dot"></span>
-        <span id="statusText">Verificando...</span>
+        <span id="statusText">Checking...</span>
       </span>
     </div>
 
-    <label for="portInput">Puerto del servidor local (PC)</label>
+    <label for="portInput">Local PC server port</label>
     <div class="row">
       <input id="portInput" type="number" min="1024" max="65535" value="8765" />
-      <button id="saveBtn" type="button">Guardar</button>
+      <button id="saveBtn" type="button">Save</button>
     </div>
 
-    <button id="reconnectBtn" class="secondary" type="button">Reconectar ahora</button>
+    <button id="reconnectBtn" class="secondary" type="button">Reconnect now</button>
 
     <p class="hint">
-      Se conecta automáticamente a <code>127.0.0.1</code> para sincronizar pestañas, marcadores y controles de video con tu celular.
+      Automatically connects to <code>127.0.0.1</code> to sync live tabs, bookmarks, and HTML5 media controls with your phone.
     </p>
 
     <script src="popup.js"></script>

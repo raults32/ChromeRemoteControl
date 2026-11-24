@@ -142,7 +142,7 @@
       volume: Number(media.volume ?? 1),
       playbackRate: Number(media.playbackRate || 1),
       canSkipAd: Boolean(skipBtn),
-      skipLabel: skipBtn?.textContent?.trim() || "Saltar Intro / Anuncio",
+      skipLabel: skipBtn?.textContent?.trim() || "Skip Intro / Ad",
       captionsEnabled: areCaptionsEnabled(media),
       pipActive: document.pictureInPictureElement === media
     };

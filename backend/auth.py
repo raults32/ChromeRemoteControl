@@ -31,9 +31,9 @@ class AuthManager:
     def clear_failures(self, client_ip: str) -> None:
         self._failed_attempts.pop(client_ip, None)
 
-    def verify_pin(self, pin: str, client_ip: str = "unknown", device_name: str = "Móvil") -> str | None:
+    def verify_pin(self, pin: str, client_ip: str = "unknown", device_name: str = "Mobile") -> str | None:
         if self._is_rate_limited(client_ip):
-            raise PermissionError("Demasiados intentos fallidos. Espera un minuto e inténtalo de nuevo.")
+            raise PermissionError("Too many failed attempts. Please wait a minute and try again.")
 
         expected_pin = str(config.get("pin", ""))
         provided_pin = str(pin or "").strip()
@@ -44,17 +44,16 @@ class AuthManager:
         self.clear_failures(client_ip)
         return self.issue_token(device_name=device_name, client_ip=client_ip)
 
-    def verify_pairing_secret(self, secret: str, client_ip: str = "unknown", device_name: str = "Móvil (QR)") -> str | None:
+    def verify_pairing_secret(self, secret: str, client_ip: str = "unknown", device_name: str = "Mobile (QR)") -> str | None:
         expected = str(config.get("pairing_secret", ""))
         provided = str(secret or "").strip()
         if not expected or not provided or not hmac.compare_digest(provided, expected):
             return None
         return self.issue_token(device_name=device_name, client_ip=client_ip)
 
-    def issue_token(self, device_name: str = "Móvil", client_ip: str = "unknown") -> str:
+    def issue_token(self, device_name: str = "Mobile", client_ip: str = "unknown") -> str:
         token = secrets.token_urlsafe(32)
         tokens: dict[str, Any] = dict(config.get("authorized_tokens", {}))
-        # Cap stored tokens to 25 recent devices
         if len(tokens) >= 25:
             oldest_key = sorted(tokens.keys(), key=lambda k: tokens[k].get("created_at", 0))[0]
             tokens.pop(oldest_key, None)

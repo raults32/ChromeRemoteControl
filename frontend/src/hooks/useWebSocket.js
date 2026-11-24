@@ -30,7 +30,7 @@ export function useRemoteSocket(token, onUnauthorized) {
       volume: 1,
       playbackRate: 1,
       canSkipAd: false,
-      skipLabel: "Saltar Intro / Anuncio",
+      skipLabel: "Skip Intro / Ad",
       captionsEnabled: false,
       pipActive: false
     },
@@ -196,14 +196,14 @@ export function useRemoteSocket(token, onUnauthorized) {
 
           if (action === "clipboard_content") {
             setServerState((prev) => ({ ...prev, clipboardText: payload.text || "" }));
-            showToast("Portapapeles recibido desde la PC", "success");
+            showToast("Clipboard fetched from PC", "success");
             return;
           }
 
           if (action === "find_result") {
             setServerState((prev) => ({ ...prev, findResult: payload }));
             if (!payload.found && payload.query) {
-              showToast(`Sin coincidencias para "${payload.query}"`, "warning");
+              showToast(`No matches for "${payload.query}"`, "warning");
             }
             return;
           }

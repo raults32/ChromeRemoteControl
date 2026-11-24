@@ -37,7 +37,7 @@ FRONTEND_DIST = BACKEND_DIR.parent / "frontend" / "dist"
 class LoginRequest(BaseModel):
     pin: str | None = None
     pairingSecret: str | None = None
-    deviceName: str = "Celular"
+    deviceName: str = "Phone"
 
 
 class ChangePinRequest(BaseModel):
@@ -262,7 +262,7 @@ async def api_login(body: LoginRequest, request: Request) -> JSONResponse:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
 
     if not token:
-        raise HTTPException(status_code=401, detail="PIN o código de emparejamiento incorrecto.")
+        raise HTTPException(status_code=401, detail="Incorrect PIN or pairing code.")
 
     return JSONResponse({"ok": True, "token": token})
 
@@ -272,7 +272,7 @@ async def api_pairing_info(request: Request, token: str | None = Query(default=N
     client_host = request.client.host if request.client else ""
     tok = _extract_token(request, token)
     if not auth_manager.is_loopback(client_host) and not auth_manager.validate_token(tok):
-        raise HTTPException(status_code=403, detail="Solo disponible desde la PC local o sesión autenticada.")
+        raise HTTPException(status_code=403, detail="Only available from localhost or an authenticated session.")
     ip = get_primary_lan_ip()
     port = int(config.get("port", 8765))
     secret = str(config.get("pairing_secret", ""))
@@ -292,7 +292,7 @@ async def api_qr_png(request: Request, token: str | None = Query(default=None)) 
     client_host = request.client.host if request.client else ""
     tok = _extract_token(request, token)
     if not auth_manager.is_loopback(client_host) and not auth_manager.validate_token(tok):
-        raise HTTPException(status_code=403, detail="No autorizado.")
+        raise HTTPException(status_code=403, detail="Unauthorized.")
     ip = get_primary_lan_ip()
     port = int(config.get("port", 8765))
     secret = str(config.get("pairing_secret", ""))
@@ -305,10 +305,10 @@ async def api_change_pin(body: ChangePinRequest, request: Request, token: str | 
     client_host = request.client.host if request.client else ""
     tok = _extract_token(request, token)
     if not auth_manager.is_loopback(client_host) and not auth_manager.validate_token(tok):
-        raise HTTPException(status_code=403, detail="No autorizado.")
+        raise HTTPException(status_code=403, detail="Unauthorized.")
     try:
         saved_pin = config.set_pin(body.newPin, revoke_sessions=False)
-        new_token = auth_manager.issue_token(device_name="Sesión Renovada", client_ip=client_host)
+        new_token = auth_manager.issue_token(device_name="Renewed Session", client_ip=client_host)
         return {"ok": True, "pin": saved_pin, "token": new_token}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -449,7 +449,7 @@ async def handle_system_action(client_id: str, action: str, payload: dict[str, A
                 "target": "client",
                 "action": "toast",
                 "payload": {
-                    "message": "Copiado al portapapeles de la PC" if ok else "No se pudo copiar al portapapeles",
+                    "message": "Copied to PC clipboard" if ok else "Failed to copy to PC clipboard",
                     "type": "success" if ok else "error",
                 },
             },
@@ -482,7 +482,7 @@ async def handle_system_action(client_id: str, action: str, payload: dict[str, A
         await hub.broadcast_to_clients({"target": "client", "action": "audio_state", "payload": audio})
         return
 
-    # Screen Preview ("Modo Espiar Pantalla")
+    # Live Screen Preview ("Screen Spy Mode")
     if act == "screen_start":
         if payload:
             screen_streamer.configure(
@@ -549,7 +549,7 @@ async def handle_system_action(client_id: str, action: str, payload: dict[str, A
             asyncio.create_task(execute_macro(found))
             await hub.send_to_client(
                 client_id,
-                {"target": "client", "action": "toast", "payload": {"message": f"Ejecutando: {found.get('name')}", "type": "info"}},
+                {"target": "client", "action": "toast", "payload": {"message": f"Running: {found.get('name')}", "type": "info"}},
             )
         return
 
@@ -606,7 +606,7 @@ async def handle_system_action(client_id: str, action: str, payload: dict[str, A
                 "target": "client",
                 "action": "toast",
                 "payload": {
-                    "message": f"Acción ejecutada: {p_action}" if res.get("ok") else res.get("error", "Error"),
+                    "message": f"Power action triggered: {p_action}" if res.get("ok") else res.get("error", "Error"),
                     "type": "info" if res.get("ok") else "error",
                 },
             },
@@ -641,7 +641,7 @@ async def handle_chrome_or_media_action(client_id: str, target: str, action: str
 async def ws_client_endpoint(websocket: WebSocket, token: str | None = Query(default=None)) -> None:
     if not auth_manager.validate_token(token):
         await websocket.accept()
-        await websocket.close(code=4401, reason="No autorizado: PIN o token inválido")
+        await websocket.close(code=4401, reason="Unauthorized: invalid PIN or token")
         return
 
     await websocket.accept()
@@ -685,7 +685,7 @@ async def ws_client_endpoint(websocket: WebSocket, token: str | None = Query(def
                     {
                         "target": "client",
                         "action": "toast",
-                        "payload": {"message": "Control remoto en pausa desde la bandeja del sistema en PC", "type": "warning"},
+                        "payload": {"message": "Remote control is paused from the PC system tray", "type": "warning"},
                     }
                 )
                 continue
@@ -709,7 +709,7 @@ async def ws_extension_endpoint(websocket: WebSocket) -> None:
     client_host = websocket.client.host if websocket.client else ""
     if not auth_manager.is_loopback(client_host):
         await websocket.accept()
-        await websocket.close(code=4403, reason="La extensión solo puede conectarse desde localhost")
+        await websocket.close(code=4403, reason="Extension may only connect from localhost")
         return
 
     await websocket.accept()
@@ -772,7 +772,7 @@ async def ws_extension_endpoint(websocket: WebSocket) -> None:
 @app.get("/{full_path:path}")
 async def serve_pwa(full_path: str) -> Response:
     if full_path.startswith("api/") or full_path.startswith("ws/"):
-        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+        raise HTTPException(status_code=404, detail="Route not found")
 
     if FRONTEND_DIST.is_dir():
         if full_path:
@@ -789,18 +789,18 @@ async def serve_pwa(full_path: str) -> Response:
 
     return JSONResponse(
         {
-            "message": "Chrome Remote Control Backend activo. Compila el frontend con 'npm run build' en /frontend.",
+            "message": "Chrome Remote Control Backend active. Build the frontend with 'npm run build' inside /frontend.",
             "docs": "/docs",
         }
     )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Servidor local para Chrome Remote Control")
-    parser.add_argument("--host", default=None, help="Host a escuchar (por defecto 0.0.0.0)")
-    parser.add_argument("--port", type=int, default=None, help="Puerto TCP (por defecto 8765)")
-    parser.add_argument("--pin", default=None, help="Establecer un PIN fijo de 4 a 6 dígitos al iniciar")
-    parser.add_argument("--no-tray", action="store_true", help="Desactivar icono en la bandeja del sistema")
+    parser = argparse.ArgumentParser(description="Local server for Chrome Remote Control")
+    parser.add_argument("--host", default=None, help="Bind host (default 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=None, help="TCP port (default 8765)")
+    parser.add_argument("--pin", default=None, help="Set a fixed 4-6 digit PIN on startup")
+    parser.add_argument("--no-tray", action="store_true", help="Disable system tray icon")
     args = parser.parse_args()
 
     if args.host:

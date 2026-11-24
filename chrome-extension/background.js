@@ -116,7 +116,7 @@ async function broadcastTabsAndWindows() {
           id: tab.id,
           windowId: tab.windowId,
           index: tab.index,
-          title: tab.title || "Nueva pestaña",
+          title: tab.title || "New Tab",
           url: tab.url || "",
           domain: extractDomain(tab.url),
           favIconUrl: tab.favIconUrl || "",
@@ -203,7 +203,7 @@ function flattenBookmarks(nodes, folderName = "", acc = []) {
     if (node.url) {
       acc.push({
         id: node.id,
-        title: node.title || extractDomain(node.url) || "Marcador",
+        title: node.title || extractDomain(node.url) || "Bookmark",
         url: node.url,
         domain: extractDomain(node.url),
         folder: folderName

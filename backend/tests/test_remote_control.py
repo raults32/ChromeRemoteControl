@@ -153,7 +153,7 @@ def test_macros_sleep_timer_and_pause_guard() -> None:
                 "payload": {
                     "macro": {
                         "id": "test-macro",
-                        "name": "Macro Prueba",
+                        "name": "Test Macro",
                         "steps": [{"type": "set_volume", "value": 40}],
                     }
                 },
@@ -185,7 +185,7 @@ def test_macros_sleep_timer_and_pause_guard() -> None:
         ws.send_json({"target": "system", "action": "mouse_move", "payload": {"dx": 10, "dy": 10}})
         paused_toast = ws.receive_json()
         assert paused_toast["action"] == "toast"
-        assert "pausa" in paused_toast["payload"]["message"].lower()
+        assert "paused" in paused_toast["payload"]["message"].lower()
         config.set("paused", False)
 
 
@@ -195,8 +195,8 @@ def test_win32_structs_unicode_and_screen_capture() -> None:
         expected_size = 40 if ctypes.sizeof(ctypes.c_void_p) == 8 else 28
         assert ctypes.sizeof(system_control.INPUT) == expected_size
 
-        # Spanish ñ + accents + 4-byte emoji surrogate pairs
-        sample = "Español ñ áéíóú 🚀"
+        # International Unicode characters + 4-byte emoji surrogate pairs
+        sample = "Hello café 🚀"
         events = system_control._make_unicode_inputs(sample)
         # UTF-16 code units * 2 (key down + key up)
         expected_units = len(sample.encode("utf-16-le")) // 2

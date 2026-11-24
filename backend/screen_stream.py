@@ -100,7 +100,7 @@ class ScreenStreamer:
                 d_fallback = ImageDraw.Draw(img)
                 d_fallback.text(
                     (40, b["height"] // 2 - 10),
-                    "Pantalla bloqueada o sin sesion grafica activa",
+                    "Screen locked or no active desktop session",
                     fill=(161, 161, 170),
                 )
 

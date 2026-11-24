@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Chrome Remote Control Bridge",
   "version": "1.0.0",
-  "description": "Puente local WebSocket para controlar pestañas, navegación y video HTML5 desde el celular.",
+  "description": "Local WebSocket bridge for live Chrome tab management, bookmarks, and HTML5 media remote control.",
   "minimum_chrome_version": "116",
   "permissions": [
     "tabs",

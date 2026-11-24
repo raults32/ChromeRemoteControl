@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function TabsPanel({ serverState, send, vibrate }) {
-  const [subView, setSubView] = useState("tabs"); // 'tabs' | 'bookmarks'
+  const [subView, setSubView] = useState("tabs");
   const [selectedWindowId, setSelectedWindowId] = useState("all");
   const [filterText, setFilterText] = useState("");
 
@@ -27,14 +27,12 @@ export default function TabsPanel({ serverState, send, vibrate }) {
     send("chrome", action, payload);
   };
 
-  // Preload bookmarks once so hidden="until-found" can match bookmarks during Find-in-Page
   useEffect(() => {
     if (serverState.extensionConnected && serverState.bookmarks.length === 0) {
       send("chrome", "get_bookmarks", {});
     }
   }, [serverState.extensionConnected, serverState.bookmarks.length, send]);
 
-  // Synchronize hidden="until-found" & beforematch events on tabpanels (per tabs guide)
   useEffect(() => {
     const tPanel = tabsPanelRef.current;
     const bPanel = bookmarksPanelRef.current;
@@ -92,7 +90,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
         <div
           role="tablist"
           {...({ focusgroup: "tablist nomemory" })}
-          aria-label="Pestañas abiertas y marcadores"
+          aria-label="Open tabs and bookmarks"
           className="bg-[#121212] border border-zinc-800 rounded-2xl p-1 flex items-center gap-1"
         >
           <button
@@ -108,7 +106,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
             className="inpage-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 text-zinc-300"
           >
             <Layers className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Pestañas ({serverState.tabs.length})</span>
+            <span>Tabs ({serverState.tabs.length})</span>
           </button>
 
           <button
@@ -125,14 +123,14 @@ export default function TabsPanel({ serverState, send, vibrate }) {
             className="inpage-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 text-zinc-300"
           >
             <Bookmark className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Marcadores</span>
+            <span>Bookmarks</span>
           </button>
         </div>
 
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            aria-label="Reabrir última pestaña cerrada"
+            aria-label="Reopen last closed tab"
             onClick={() => fireChrome("tab_reopen")}
             className="bg-[#121212] active:bg-zinc-800 border border-zinc-800 rounded-xl p-2.5 text-zinc-200"
           >
@@ -140,7 +138,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Abrir nueva pestaña"
+            aria-label="Open new tab"
             onClick={() => fireChrome("tab_new", {})}
             className="bg-cyan-500 active:bg-cyan-400 text-black rounded-xl p-2.5 font-bold"
           >
@@ -153,7 +151,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
       <search>
         <form action="/filter-tabs" method="get" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="tabs-filter-input" className="visually-hidden">
-            Filtrar pestañas o marcadores
+            Filter tabs or bookmarks
           </label>
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
@@ -167,20 +165,19 @@ export default function TabsPanel({ serverState, send, vibrate }) {
               autoCapitalize="none"
               spellCheck={false}
               enterKeyHint="search"
-              placeholder={subView === "tabs" ? "Filtrar pestañas por título o dominio..." : "Filtrar marcadores..."}
+              placeholder={subView === "tabs" ? "Filter tabs by title or domain..." : "Filter bookmarks..."}
               className="w-full bg-[#121212] border border-zinc-800 rounded-2xl pl-10 pr-3 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500"
             />
           </div>
         </form>
       </search>
 
-      {/* Panel container without gap so hidden="until-found" panel leaves zero empty space */}
       <div>
-        {/* Tab Panel 1: Open Tabs (no padding/border on role="tabpanel" itself per tabs guide) */}
+        {/* Tab Panel 1: Open Tabs */}
         <div role="tabpanel" aria-labelledby="tab-open-list" ref={tabsPanelRef}>
           <div className="space-y-3">
             {serverState.windows.length > 1 && (
-              <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Ventanas de Chrome">
+              <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Chrome windows">
                 <button
                   type="button"
                   aria-pressed={selectedWindowId === "all"}
@@ -191,7 +188,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
                       : "bg-[#121212] border-zinc-800 text-zinc-400"
                   }`}
                 >
-                  Todas las ventanas
+                  All windows
                 </button>
                 {serverState.windows.map((win, idx) => {
                   const activeWin = String(selectedWindowId) === String(win.id);
@@ -211,7 +208,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
                       }`}
                     >
                       {win.incognito && <EyeOff className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" />}
-                      <span>Ventana {idx + 1} ({win.tabsCount})</span>
+                      <span>Window {idx + 1} ({win.tabsCount})</span>
                     </button>
                   );
                 })}
@@ -221,10 +218,10 @@ export default function TabsPanel({ serverState, send, vibrate }) {
             {!serverState.extensionConnected && (
               <div className="squircle-card bg-[#121212] border border-amber-500/30 rounded-2xl p-4 space-y-2.5">
                 <h2 className="text-xs font-semibold text-amber-300">
-                  Extensión de Chrome no detectada en este momento
+                  Chrome Extension not detected right now
                 </h2>
                 <p className="text-xs text-zinc-400">
-                  Carga la carpeta <code>chrome-extension</code> en <code>chrome://extensions</code> para ver la lista de pestañas en vivo. Mientras tanto puedes cambiar o cerrar pestañas con estos controles rápidos:
+                  Load the <code>chrome-extension</code> folder in <code>chrome://extensions</code> to view live open tabs. Meanwhile, you can switch or close tabs using quick OS shortcuts:
                 </p>
                 <div className="grid grid-cols-3 gap-2 pt-1">
                   <button
@@ -232,21 +229,21 @@ export default function TabsPanel({ serverState, send, vibrate }) {
                     onClick={() => fireChrome("tab_prev")}
                     className="bg-black border border-zinc-800 rounded-xl py-2.5 text-xs font-semibold text-zinc-200"
                   >
-                    Pestaña Ant.
+                    Prev Tab
                   </button>
                   <button
                     type="button"
                     onClick={() => fireChrome("tab_next")}
                     className="bg-black border border-zinc-800 rounded-xl py-2.5 text-xs font-semibold text-zinc-200"
                   >
-                    Pestaña Sig.
+                    Next Tab
                   </button>
                   <button
                     type="button"
                     onClick={() => fireChrome("tab_close")}
                     className="bg-rose-950/50 border border-rose-800/60 rounded-xl py-2.5 text-xs font-semibold text-rose-300"
                   >
-                    Cerrar Actual
+                    Close Tab
                   </button>
                 </div>
               </div>
@@ -298,7 +295,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
-                          aria-label={`Silenciar pestaña ${tab.title}`}
+                          aria-label={`Mute tab ${tab.title}`}
                           aria-pressed={Boolean(tab.muted)}
                           onClick={() => fireChrome("tab_mute", { tabId: tab.id, muted: !tab.muted })}
                           className={`p-2 rounded-xl border ${
@@ -312,7 +309,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
 
                         <button
                           type="button"
-                          aria-label={`Fijar pestaña ${tab.title}`}
+                          aria-label={`Pin tab ${tab.title}`}
                           aria-pressed={Boolean(tab.pinned)}
                           onClick={() => fireChrome("tab_pin", { tabId: tab.id, pinned: !tab.pinned })}
                           className={`p-2 rounded-xl border ${
@@ -326,7 +323,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
 
                         <button
                           type="button"
-                          aria-label={`Duplicar pestaña ${tab.title}`}
+                          aria-label={`Duplicate tab ${tab.title}`}
                           onClick={() => fireChrome("tab_duplicate", { tabId: tab.id })}
                           className="p-2 rounded-xl bg-black border border-zinc-800 text-zinc-400"
                         >
@@ -335,7 +332,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
 
                         <button
                           type="button"
-                          aria-label={`Cerrar pestaña ${tab.title}`}
+                          aria-label={`Close tab ${tab.title}`}
                           onClick={() => fireChrome("tab_close", { tabId: tab.id })}
                           className="p-2 rounded-xl bg-black active:bg-rose-950 border border-zinc-800 text-rose-400"
                         >
@@ -350,7 +347,7 @@ export default function TabsPanel({ serverState, send, vibrate }) {
           </div>
         </div>
 
-        {/* Tab Panel 2: Bookmarks (hidden="until-found" managed via ref) */}
+        {/* Tab Panel 2: Bookmarks */}
         <div role="tabpanel" aria-labelledby="tab-bookmarks-list" hidden="until-found" ref={bookmarksPanelRef}>
           <ul role="list" className="space-y-2 list-none m-0 p-0">
             {filteredBookmarks.map((bm) => (

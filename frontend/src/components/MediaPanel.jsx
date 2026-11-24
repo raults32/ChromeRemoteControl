@@ -62,10 +62,10 @@ export default function MediaPanel({ serverState, send, vibrate }) {
           <div className="min-w-0 flex-1">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400 mb-1">
               <Tv className="w-3.5 h-3.5" aria-hidden="true" />
-              {media.domain || "Reproductor Multimedia"}
+              {media.domain || "Media Player"}
             </span>
             <h2 className="text-base font-bold text-zinc-100 leading-snug line-clamp-2">
-              {media.title || "Reproduce un video en YouTube, Netflix, Twitch o HTML5"}
+              {media.title || "Play a video on YouTube, Netflix, Twitch, or HTML5"}
             </h2>
             {media.artist && <p className="text-xs text-zinc-400 mt-0.5 truncate">{media.artist}</p>}
           </div>
@@ -82,13 +82,13 @@ export default function MediaPanel({ serverState, send, vibrate }) {
           }`}
         >
           <FastForward className="w-4 h-4" aria-hidden="true" />
-          <span>{media.canSkipAd ? media.skipLabel || "Saltar Intro / Anuncio" : "Saltar Intro / Anuncio"}</span>
+          <span>{media.canSkipAd ? media.skipLabel || "Skip Intro / Ad" : "Skip Intro / Ad"}</span>
         </button>
 
-        {/* Interactive Scrubber with explicit associated <label> */}
+        {/* Interactive Scrubber */}
         <div className="space-y-1 pt-1">
           <label htmlFor="video-scrubber" className="visually-hidden">
-            Posición de reproducción del video
+            Video timeline scrubber
           </label>
           <input
             id="video-scrubber"
@@ -113,11 +113,11 @@ export default function MediaPanel({ serverState, send, vibrate }) {
           </div>
         </div>
 
-        {/* Primary Transport Controls (fixed accessible label with aria-pressed per motion guide) */}
+        {/* Primary Transport Controls */}
         <div className="flex items-center justify-center gap-4 py-1">
           <button
             type="button"
-            aria-label="Video anterior"
+            aria-label="Previous video"
             onClick={() => fireMedia("prev")}
             className="w-12 h-12 rounded-2xl bg-black active:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-200"
           >
@@ -126,7 +126,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
 
           <button
             type="button"
-            aria-label="Reproducir o pausar video"
+            aria-label="Play or pause video"
             aria-pressed={!media.paused}
             onClick={() => fireMedia("play_pause")}
             className="w-18 h-18 rounded-3xl bg-cyan-500 active:bg-cyan-400 text-black flex items-center justify-center shadow-lg shadow-cyan-500/20"
@@ -140,7 +140,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
 
           <button
             type="button"
-            aria-label="Siguiente video"
+            aria-label="Next video"
             onClick={() => fireMedia("next")}
             className="w-12 h-12 rounded-2xl bg-black active:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-200"
           >
@@ -149,7 +149,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
         </div>
 
         {/* Precision Seek Jumps (-30s, -10s, -5s, +5s, +10s, +30s) */}
-        <div className="grid grid-cols-6 gap-1.5 pt-1" role="group" aria-label="Saltos rápidos de tiempo">
+        <div className="grid grid-cols-6 gap-1.5 pt-1" role="group" aria-label="Seek jumps">
           {[-30, -10, -5, 5, 10, 30].map((sec) => (
             <button
               key={sec}
@@ -166,7 +166,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
       {/* Video View & Subtitles Options */}
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          Opciones de Reproductor
+          Player Options
         </h2>
         <div className="grid grid-cols-4 gap-2">
           <button
@@ -180,7 +180,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             }`}
           >
             <Subtitles className="w-5 h-5" aria-hidden="true" />
-            <span>Subtítulos</span>
+            <span>Captions</span>
           </button>
 
           <button
@@ -189,7 +189,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-2 flex flex-col items-center gap-1 text-xs text-zinc-300"
           >
             <Maximize className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-            <span>Completa</span>
+            <span>Fullscreen</span>
           </button>
 
           <button
@@ -198,7 +198,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-2 flex flex-col items-center gap-1 text-xs text-zinc-300"
           >
             <RectangleHorizontal className="w-5 h-5 text-blue-400" aria-hidden="true" />
-            <span>Teatro</span>
+            <span>Theater</span>
           </button>
 
           <button
@@ -218,8 +218,8 @@ export default function MediaPanel({ serverState, send, vibrate }) {
 
         {/* Playback Speed Selector */}
         <div>
-          <span className="block text-[11px] text-zinc-400 mb-1.5">Velocidad de reproducción</span>
-          <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Velocidad de reproducción">
+          <span className="block text-[11px] text-zinc-400 mb-1.5">Playback speed</span>
+          <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Playback speed">
             {RATES.map((r) => {
               const active = Math.abs((media.playbackRate || 1) - r) < 0.05;
               return (
@@ -256,7 +256,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             }`}
           >
             {media.muted ? <VolumeX className="w-4 h-4" aria-hidden="true" /> : <Volume2 className="w-4 h-4 text-cyan-400" aria-hidden="true" />}
-            <span>Silenciar Video</span>
+            <span>Mute Video</span>
           </button>
 
           <button
@@ -280,7 +280,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
         <div className="flex items-center gap-3">
           <Volume2 className="w-4 h-4 text-zinc-400 shrink-0" aria-hidden="true" />
           <label htmlFor="media-pc-volume" className="visually-hidden">
-            Volumen maestro de la PC
+            PC master volume
           </label>
           <input
             id="media-pc-volume"

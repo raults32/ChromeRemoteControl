@@ -1,5 +1,6 @@
 {
   "name": "chrome-remote-control-pwa",
+  "description": "Low-latency Wi-Fi remote control for Google Chrome and your PC via FastAPI WebSockets, Manifest V3 extension bridge, and AMOLED PWA.",
   "private": true,
   "version": "1.0.0",
   "type": "module",

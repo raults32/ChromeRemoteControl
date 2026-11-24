@@ -16,11 +16,11 @@ import { useRemoteSocket } from "./hooks/useWebSocket.js";
 const TOKEN_STORAGE_KEY = "crc_session_token";
 
 const NAV_ITEMS = [
-  { id: "chrome", label: "Chrome", title: "Navegación y Omnibox", icon: Compass },
-  { id: "media", label: "Media", title: "Control Multimedia", icon: PlayCircle },
-  { id: "touchpad", label: "Touchpad", title: "Touchpad y Teclado", icon: Touchpad },
-  { id: "tabs", label: "Pestañas", title: "Pestañas y Marcadores", icon: Layers },
-  { id: "system", label: "Sistema", title: "Audio, Macros y Energía", icon: SlidersHorizontal }
+  { id: "chrome", label: "Chrome", title: "Navigation & Omnibox", icon: Compass },
+  { id: "media", label: "Media", title: "Multimedia Control", icon: PlayCircle },
+  { id: "touchpad", label: "Touchpad", title: "Touchpad & Keyboard", icon: Touchpad },
+  { id: "tabs", label: "Tabs", title: "Open Tabs & Bookmarks", icon: Layers },
+  { id: "system", label: "System", title: "Audio, Macros & Power", icon: SlidersHorizontal }
 ];
 
 export default function App() {
@@ -60,7 +60,7 @@ export default function App() {
         const res = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pairingSecret: pairSecret, deviceName: "Celular (QR)" })
+          body: JSON.stringify({ pairingSecret: pairSecret, deviceName: "Mobile (QR)" })
         });
         const data = await res.json();
         if (data?.token) {
@@ -111,7 +111,6 @@ export default function App() {
   useEffect(() => {
     if (!toast) return undefined;
 
-    // Suppress background toasts while a modal <dialog> is open
     if (document.querySelector("dialog:modal")) {
       return undefined;
     }
@@ -126,7 +125,6 @@ export default function App() {
       }
     }
 
-    // Announce via ariaNotify() when available, else centralized polite live region
     if (typeof document.ariaNotify === "function") {
       document.ariaNotify(toast.message);
     } else {
@@ -148,7 +146,6 @@ export default function App() {
     };
   }, [toast, dismissToast]);
 
-  // View Transition + Accessibility Focus Routing on primary view switch
   const switchView = (nextId, viaKeyboard = false) => {
     if (nextId === activeNav) return;
     vibrate(10);
@@ -177,8 +174,8 @@ export default function App() {
   if (pairingBusy) {
     return (
       <main className="min-h-dvh bg-black text-zinc-200 grid place-content-center px-4">
-        <progress aria-label="Emparejando dispositivo por código QR" className="w-48 mb-2 mx-auto" />
-        <p className="text-sm text-center">Emparejando dispositivo por código QR...</p>
+        <progress aria-label="Pairing device via QR code" className="w-48 mb-2 mx-auto" />
+        <p className="text-sm text-center">Pairing device via QR code...</p>
       </main>
     );
   }
@@ -191,14 +188,13 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-black text-zinc-100 flex flex-col">
-      {/* Centralized screen-reader live region fallback when ariaNotify() is unavailable */}
-      <p className="visually-hidden">Avisos del control remoto</p>
+      <p className="visually-hidden">Remote control status announcements</p>
       <div aria-live="polite" aria-atomic="true" className="visually-hidden">
         {liveAnnouncement}
       </div>
 
       {/* Persistent Top-Layer Toast Region (popover="manual") */}
-      <div role="region" aria-label="Notificaciones">
+      <div role="region" aria-label="Notifications">
         <div
           id="remote-toast"
           ref={toastPopoverRef}
@@ -222,7 +218,7 @@ export default function App() {
             type="button"
             popovertarget="remote-toast"
             popovertargetaction="hide"
-            aria-label="Cerrar notificación"
+            aria-label="Dismiss notification"
             onClick={() => dismissToast(true)}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 shrink-0"
           >
@@ -246,9 +242,9 @@ export default function App() {
             <span className="text-xs font-bold tracking-tight truncate">
               {connectionState === "connected"
                 ? serverState.paused
-                  ? "Pausado en PC"
-                  : "Conectado"
-                : "Reconectando..."}
+                  ? "Paused on PC"
+                  : "Connected"
+                : "Reconnecting..."}
             </span>
             {connectionState === "connected" && latencyMs !== null && (
               <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full">
@@ -265,12 +261,12 @@ export default function App() {
             }`}
           >
             <Puzzle className="w-3 h-3" aria-hidden="true" />
-            <span>{serverState.extensionConnected ? "Extensión Activa" : "Modo Atajos"}</span>
+            <span>{serverState.extensionConnected ? "Extension Active" : "Shortcut Mode"}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content Landmark with Single Page <h1> Focus Anchor */}
+      {/* Main Content Landmark */}
       <main className="flex-1 w-full max-w-lg mx-auto px-3.5 pt-3 pb-24">
         <h1
           id="view-heading"
@@ -304,7 +300,7 @@ export default function App() {
       </main>
 
       {/* Ergonomic 5-Item Bottom Navigation Landmark */}
-      <nav aria-label="Principal" className="safe-bottom-bar bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-900">
+      <nav aria-label="Primary" className="safe-bottom-bar bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-900">
         <div className="max-w-lg mx-auto grid grid-cols-5 gap-1 pt-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;

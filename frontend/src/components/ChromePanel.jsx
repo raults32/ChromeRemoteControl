@@ -35,7 +35,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
   const [engine, setEngine] = useState("google");
   const [openInNewTab, setOpenInNewTab] = useState(true);
   const [findQuery, setFindQuery] = useState("");
-  const [drawerTab, setDrawerTab] = useState(null); // 'bookmarks' | 'history' | 'downloads' | null
+  const [drawerTab, setDrawerTab] = useState(null);
 
   const fireChrome = (action, payload = {}) => {
     vibrate?.(12);
@@ -92,11 +92,11 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               {activeTab
                 ? activeTab.title
                 : serverState.extensionConnected
-                ? "Sin pestaña activa"
-                : "Modo Atajos de Teclado (sin extensión)"}
+                ? "No active tab"
+                : "OS Shortcut Fallback Mode (extension offline)"}
             </p>
             <p className="text-[11px] text-zinc-400 truncate">
-              {activeTab?.domain || "Usa la barra inferior para abrir cualquier sitio o búsqueda"}
+              {activeTab?.domain || "Use the Omnibox below to launch any URL or search"}
             </p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
         <search>
           <form action="/omnibox" method="get" onSubmit={handleOmniboxSubmit} className="space-y-2.5">
             <label htmlFor="omnibox-input" className="block text-xs font-semibold text-zinc-300">
-              Dirección URL o búsqueda rápida
+              URL or quick search
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1 min-w-0">
@@ -122,7 +122,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                   autoCapitalize="none"
                   spellCheck={false}
                   enterKeyHint="go"
-                  placeholder="Ej. youtube.com o tutorial FastAPI"
+                  placeholder="e.g. youtube.com or FastAPI docs"
                   className="w-full bg-black border border-zinc-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500"
                 />
               </div>
@@ -130,12 +130,11 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                 type="submit"
                 className="bg-cyan-500 active:bg-cyan-400 text-black font-bold px-4 rounded-xl text-sm shrink-0"
               >
-                Abrir
+                Go
               </button>
             </div>
 
-            {/* Engine Chips with scroll-driven edge-fade masks */}
-            <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Motor de búsqueda">
+            <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Search engine">
               {ENGINES.map((eng) => {
                 const selected = engine === eng.id;
                 return (
@@ -160,7 +159,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </div>
 
             <label htmlFor="omnibox-newtab" className="flex items-center justify-between gap-2 text-xs text-zinc-300 cursor-pointer pt-0.5">
-              <span>Abrir en una pestaña nueva</span>
+              <span>Open in a new tab</span>
               <input
                 id="omnibox-newtab"
                 name="newTab"
@@ -177,7 +176,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
       {/* Navigation Controls */}
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
-          Navegación
+          Navigation
         </h2>
         <div className="grid grid-cols-6 gap-2">
           <button
@@ -186,7 +185,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <ArrowLeft className="w-5 h-5 text-zinc-200" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Atrás</span>
+            <span className="text-[10px] text-zinc-400">Back</span>
           </button>
           <button
             type="button"
@@ -194,7 +193,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <ArrowRight className="w-5 h-5 text-zinc-200" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Adelante</span>
+            <span className="text-[10px] text-zinc-400">Forward</span>
           </button>
           <button
             type="button"
@@ -202,7 +201,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <RotateCw className="w-5 h-5 text-cyan-400" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Recargar</span>
+            <span className="text-[10px] text-zinc-400">Reload</span>
           </button>
           <button
             type="button"
@@ -210,7 +209,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <RefreshCwOff className="w-5 h-5 text-amber-400" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Sin caché</span>
+            <span className="text-[10px] text-zinc-400">Hard</span>
           </button>
           <button
             type="button"
@@ -218,7 +217,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <Square className="w-4 h-4 text-rose-400" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Detener</span>
+            <span className="text-[10px] text-zinc-400">Stop</span>
           </button>
           <button
             type="button"
@@ -226,7 +225,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
             <Home className="w-5 h-5 text-zinc-200" aria-hidden="true" />
-            <span className="text-[10px] text-zinc-400">Inicio</span>
+            <span className="text-[10px] text-zinc-400">Home</span>
           </button>
         </div>
       </section>
@@ -235,7 +234,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
-            Pestañas y Ventanas
+            Tabs & Windows
           </h2>
           <div className="grid grid-cols-3 gap-2">
             <button
@@ -244,7 +243,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-2 flex flex-col items-center gap-1 text-xs"
             >
               <Plus className="w-4 h-4 text-cyan-400" aria-hidden="true" />
-              <span>Nueva</span>
+              <span>New Tab</span>
             </button>
             <button
               type="button"
@@ -252,7 +251,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-2 flex flex-col items-center gap-1 text-xs"
             >
               <AppWindow className="w-4 h-4 text-blue-400" aria-hidden="true" />
-              <span>Ventana</span>
+              <span>Window</span>
             </button>
             <button
               type="button"
@@ -260,19 +259,19 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 px-2 flex flex-col items-center gap-1 text-xs"
             >
               <EyeOff className="w-4 h-4 text-purple-400" aria-hidden="true" />
-              <span>Incógnito</span>
+              <span>Incognito</span>
             </button>
           </div>
         </div>
 
         <div className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
-            Zoom y Vista
+            Zoom & Display
           </h2>
           <div className="grid grid-cols-4 gap-2">
             <button
               type="button"
-              aria-label="Alejar zoom -"
+              aria-label="Zoom out -"
               onClick={() => fireChrome("zoom_out")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs"
             >
@@ -281,7 +280,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </button>
             <button
               type="button"
-              aria-label="Restablecer zoom 100%"
+              aria-label="Reset zoom 100%"
               onClick={() => fireChrome("zoom_reset")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center justify-center text-xs font-semibold text-cyan-300"
             >
@@ -289,7 +288,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </button>
             <button
               type="button"
-              aria-label="Acercar zoom +"
+              aria-label="Zoom in +"
               onClick={() => fireChrome("zoom_in")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs"
             >
@@ -298,7 +297,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </button>
             <button
               type="button"
-              aria-label="Pantalla completa F11"
+              aria-label="Browser fullscreen F11"
               onClick={() => fireChrome("fullscreen")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs"
             >
@@ -314,7 +313,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
         <search>
           <form action="/find" method="get" onSubmit={(e) => handleFindSubmit(e, false)} className="space-y-1.5">
             <label htmlFor="page-find-input" className="block text-xs font-semibold text-zinc-300">
-              Buscar texto dentro de la página (Ctrl+F)
+              Find text in page (Ctrl+F)
             </label>
             <div className="flex items-center gap-2">
               <div className="relative flex-1 min-w-0">
@@ -329,23 +328,23 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                   autoCapitalize="none"
                   spellCheck={false}
                   enterKeyHint="search"
-                  placeholder="Palabra o frase..."
+                  placeholder="Keyword or phrase..."
                   className="w-full bg-black border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
                 />
               </div>
               <button
                 type="button"
-                aria-label="Coincidencia anterior Ant."
+                aria-label="Previous match Prev"
                 onClick={(e) => handleFindSubmit(e, true)}
                 className="bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300"
               >
-                Ant.
+                Prev
               </button>
               <button
                 type="submit"
                 className="bg-zinc-800 active:bg-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-cyan-300"
               >
-                Sig.
+                Next
               </button>
             </div>
           </form>
@@ -355,7 +354,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
       {/* Bookmarks, History & Downloads Quick Access */}
       <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          Acceso Rápido del Navegador
+          Browser Quick Access
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -369,7 +368,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             }`}
           >
             <Bookmark className="w-4 h-4 text-amber-400" aria-hidden="true" />
-            <span>Marcadores</span>
+            <span>Bookmarks</span>
           </button>
           <button
             type="button"
@@ -382,7 +381,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             }`}
           >
             <History className="w-4 h-4 text-blue-400" aria-hidden="true" />
-            <span>Historial</span>
+            <span>History</span>
           </button>
           <button
             type="button"
@@ -395,7 +394,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             }`}
           >
             <Download className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-            <span>Descargas</span>
+            <span>Downloads</span>
           </button>
         </div>
 
@@ -407,11 +406,11 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                 onClick={() => fireChrome("open_bookmarks_manager")}
                 className="w-full bg-black border border-zinc-800 rounded-xl p-3 text-xs text-cyan-300 flex items-center justify-between"
               >
-                <span>Abrir administrador de marcadores en PC (Ctrl+Shift+O)</span>
+                <span>Open Bookmarks Manager on PC (Ctrl+Shift+O)</span>
                 <ExternalLink className="w-4 h-4" aria-hidden="true" />
               </button>
             ) : serverState.bookmarks.length === 0 ? (
-              <p className="text-xs text-zinc-500 text-center py-3">No se encontraron marcadores guardados.</p>
+              <p className="text-xs text-zinc-500 text-center py-3">No saved bookmarks found.</p>
             ) : (
               <ul role="list" className="space-y-1.5 list-none m-0 p-0">
                 {serverState.bookmarks.map((bm) => (
@@ -442,7 +441,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                 onClick={() => fireChrome("open_history")}
                 className="text-[11px] text-cyan-400 underline px-2 py-1"
               >
-                Abrir chrome://history en PC
+                Open chrome://history on PC
               </button>
             </div>
             <ul role="list" className="space-y-1.5 list-none m-0 p-0">
@@ -473,11 +472,11 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                 onClick={() => fireChrome("open_downloads")}
                 className="text-[11px] text-cyan-400 underline px-2 py-1"
               >
-                Abrir chrome://downloads en PC
+                Open chrome://downloads on PC
               </button>
             </div>
             {serverState.downloads.length === 0 ? (
-              <p className="text-xs text-zinc-500 text-center py-3">Sin descargas recientes.</p>
+              <p className="text-xs text-zinc-500 text-center py-3">No recent downloads.</p>
             ) : (
               <ul role="list" className="space-y-1.5 list-none m-0 p-0">
                 {serverState.downloads.map((dl) => (

@@ -21,27 +21,27 @@ const SPECIAL_KEYS = [
   { label: "Esc", key: "esc" },
   { label: "Tab", key: "tab" },
   { label: "Enter", key: "enter" },
-  { label: "⌫", key: "backspace", aria: "Retroceso ⌫" },
-  { label: "Supr", key: "delete" },
-  { label: "←", key: "left", aria: "Flecha izquierda ←" },
-  { label: "↑", key: "up", aria: "Flecha arriba ↑" },
-  { label: "↓", key: "down", aria: "Flecha abajo ↓" },
-  { label: "→", key: "right", aria: "Flecha derecha →" },
+  { label: "⌫", key: "backspace", aria: "Backspace ⌫" },
+  { label: "Del", key: "delete" },
+  { label: "←", key: "left", aria: "Left arrow ←" },
+  { label: "↑", key: "up", aria: "Up arrow ↑" },
+  { label: "↓", key: "down", aria: "Down arrow ↓" },
+  { label: "→", key: "right", aria: "Right arrow →" },
   { label: "Alt+Tab", shortcut: "alt_tab" },
   { label: "Win/Cmd", key: "win" },
-  { label: "Inicio", key: "home" },
-  { label: "Fin", key: "end" },
-  { label: "RePág", key: "pageup" },
-  { label: "AvPág", key: "pagedown" }
+  { label: "Home", key: "home" },
+  { label: "End", key: "end" },
+  { label: "PgUp", key: "pageup" },
+  { label: "PgDn", key: "pagedown" }
 ];
 
 const QUICK_SHORTCUTS = [
-  { label: "Copiar", name: "copy", icon: Copy },
-  { label: "Pegar", name: "paste", icon: ClipboardPaste },
-  { label: "Cortar", name: "cut", icon: Scissors },
-  { label: "Deshacer", name: "undo", icon: Undo2 },
-  { label: "Rehacer", name: "redo", icon: Redo2 },
-  { label: "Sel. todo", name: "select_all", icon: CheckSquare }
+  { label: "Copy", name: "copy", icon: Copy },
+  { label: "Paste", name: "paste", icon: ClipboardPaste },
+  { label: "Cut", name: "cut", icon: Scissors },
+  { label: "Undo", name: "undo", icon: Undo2 },
+  { label: "Redo", name: "redo", icon: Redo2 },
+  { label: "Select All", name: "select_all", icon: CheckSquare }
 ];
 
 const SENTINEL = " ";
@@ -225,7 +225,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     mouseDownRef.current = null;
   };
 
-  // IME-safe live typing handler (checks isComposing per forms §7)
   const handleLiveInputChange = (e) => {
     if (e.nativeEvent?.isComposing) {
       setLiveValue(e.target.value);
@@ -272,7 +271,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
   const toggleVoiceDictation = () => {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) {
-      showToast?.("Tu navegador móvil no soporta Web Speech API para dictado.", "warning");
+      showToast?.("Your mobile browser does not support Web Speech dictation.", "warning");
       return;
     }
 
@@ -283,7 +282,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     }
 
     const rec = new SpeechRec();
-    rec.lang = "es-ES";
+    rec.lang = navigator.language || "en-US";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
 
@@ -296,7 +295,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
       const transcript = event.results?.[0]?.[0]?.transcript;
       if (transcript) {
         send("system", "key_type", { text: transcript + " " });
-        showToast?.(`Dictado: "${transcript}"`, "success");
+        showToast?.(`Dictated: "${transcript}"`, "success");
       }
     };
 
@@ -344,7 +343,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
           }`}
         >
           <Keyboard className="w-4 h-4" aria-hidden="true" />
-          <span>Teclado</span>
+          <span>Keyboard</span>
         </button>
 
         <button
@@ -358,7 +357,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
           }`}
         >
           {listening ? <MicOff className="w-4 h-4" aria-hidden="true" /> : <Mic className="w-4 h-4 text-cyan-400" aria-hidden="true" />}
-          <span>Dictar Voz</span>
+          <span>Voice</span>
         </button>
 
         <button
@@ -375,17 +374,17 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
           }`}
         >
           {screenSpy ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4 text-emerald-400" aria-hidden="true" />}
-          <span>Espiar PC</span>
+          <span>Screen Spy</span>
         </button>
       </div>
 
-      {/* Live Screen Mirroring ("Modo Espiar Pantalla") using semantic <button> */}
+      {/* Live Screen Mirroring ("Screen Spy") using semantic <button> */}
       {screenSpy && (
         <section className="squircle-card bg-[#121212] border border-emerald-500/40 rounded-2xl p-2.5 space-y-2">
           <div className="flex items-center justify-between gap-2 px-1">
             <span className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1.5">
               <MousePointerClick className="w-3.5 h-3.5" aria-hidden="true" />
-              Toca la imagen para hacer clic directo en tu PC
+              Tap anywhere on the preview to click on your PC
             </span>
             <div className="flex items-center gap-1.5">
               <button
@@ -398,10 +397,10 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
                     : "bg-black border-zinc-800 text-zinc-400"
                 }`}
               >
-                {screenRightClick ? "Clic Der." : "Clic Izq."}
+                {screenRightClick ? "Right Click" : "Left Click"}
               </button>
               <label htmlFor="spy-fps-select" className="visually-hidden">
-                Cuadros por segundo de vista previa
+                Preview frame rate
               </label>
               <select
                 id="spy-fps-select"
@@ -419,21 +418,21 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
 
           <button
             type="button"
-            aria-label="Hacer clic en la vista previa en vivo de la pantalla del PC"
+            aria-label="Click on the live PC screen preview"
             onClick={handleScreenTap}
             className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-zinc-800 cursor-crosshair flex items-center justify-center p-0"
           >
             {serverState.screenFrame?.dataUrl ? (
               <img
                 src={serverState.screenFrame.dataUrl}
-                alt="Vista actual del escritorio de la PC"
+                alt="Live PC desktop preview"
                 width="960"
                 height="540"
                 draggable={false}
                 className="w-full h-full object-contain pointer-events-none"
               />
             ) : (
-              <span className="text-xs text-zinc-500">Recibiendo transmisión de pantalla...</span>
+              <span className="text-xs text-zinc-500">Receiving screen stream...</span>
             )}
           </button>
         </section>
@@ -444,7 +443,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         <section className="squircle-card bg-[#121212] border border-zinc-800 rounded-2xl p-3 space-y-2.5">
           <div className="flex items-center gap-2">
             <label htmlFor="live-key-input" className="visually-hidden">
-              Escritura tecla por tecla en vivo
+              Live key-by-key typing
             </label>
             <input
               id="live-key-input"
@@ -457,12 +456,12 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="Vivo..."
+              placeholder="Live..."
               className="w-24 bg-black border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-cyan-300"
             />
             <form action="/type" method="post" onSubmit={sendComposeText} className="flex-1 flex gap-1.5 min-w-0">
               <label htmlFor="compose-key-input" className="visually-hidden">
-                Escribir frase completa para enviar a la PC
+                Compose full text or emojis to send to PC
               </label>
               <input
                 id="compose-key-input"
@@ -471,12 +470,12 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
                 value={composeText}
                 onChange={(e) => setComposeText(e.target.value)}
                 enterKeyHint="send"
-                placeholder="Frase, ñ, acentos o emojis..."
+                placeholder="Type phrase, accents, or emojis..."
                 className="flex-1 min-w-0 bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500"
               />
               <button
                 type="submit"
-                aria-label="Enviar texto a la PC"
+                aria-label="Send text to PC"
                 className="bg-cyan-500 active:bg-cyan-400 text-black rounded-xl px-3 flex items-center justify-center"
               >
                 <Send className="w-4 h-4" aria-hidden="true" />
@@ -484,11 +483,11 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             </form>
           </div>
           <p className="text-[10px] text-zinc-400 px-0.5">
-            El campo izquierdo refleja cada tecla al instante; el derecho envía frases completas con acentos o emojis.
+            Left field mirrors every keystroke instantly; right field sends full sentences or emojis at once.
           </p>
 
-          {/* Special Keys Bar with scroll-driven edge-fade masks */}
-          <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Teclas especiales">
+          {/* Special Keys Bar */}
+          <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Special keys">
             {SPECIAL_KEYS.map((item) => (
               <button
                 key={item.label}
@@ -532,11 +531,11 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         </section>
       )}
 
-      {/* Main Low-Latency Touchpad Surface (canvas-like multi-axis input surface) */}
+      {/* Main Low-Latency Touchpad Surface */}
       <section className="space-y-2.5">
         <div
           role="application"
-          aria-label="Superficie táctil del touchpad virtual"
+          aria-label="Multi-touch virtual trackpad surface"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -551,10 +550,10 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         >
           <div className="pointer-events-none text-center px-6 space-y-1 opacity-55">
             <h2 className="text-xs font-semibold tracking-wider uppercase text-zinc-300">
-              {draggingIndicator ? "Arrastrando elemento..." : "Touchpad Multi-Touch"}
+              {draggingIndicator ? "Dragging item..." : "Multi-Touch Trackpad"}
             </h2>
             <p className="text-[11px] text-zinc-400">
-              1 dedo: Mover / Clic • 2 dedos: Clic der. / Scroll / Pellizcar Zoom • Doble toque + mover: Arrastrar
+              1 finger: Move / Click • 2 fingers: Right-click / Scroll / Pinch Zoom • Double-tap + slide: Drag
             </p>
           </div>
         </div>
@@ -569,19 +568,19 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             }}
             className="col-span-2 bg-[#121212] active:bg-zinc-800 border border-zinc-800 rounded-2xl py-3.5 text-xs font-semibold text-zinc-200"
           >
-            Clic Izquierdo
+            Left Click
           </button>
 
           <button
             type="button"
-            aria-label="Central (abrir enlace en pestaña nueva)"
+            aria-label="Middle (open link in new tab)"
             onClick={() => {
               vibrate?.(14);
               send("system", "mouse_click", { button: "middle", count: 1 });
             }}
             className="col-span-1 bg-[#121212] active:bg-zinc-800 border border-zinc-800 rounded-2xl py-3.5 text-[11px] font-semibold text-cyan-400"
           >
-            Central
+            Middle
           </button>
 
           <button
@@ -592,7 +591,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             }}
             className="col-span-2 bg-[#121212] active:bg-zinc-800 border border-zinc-800 rounded-2xl py-3.5 text-xs font-semibold text-zinc-200"
           >
-            Clic Derecho
+            Right Click
           </button>
         </div>
 
@@ -607,7 +606,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             className="bg-[#121212] active:bg-zinc-800 border border-zinc-800 rounded-2xl py-2.5 flex items-center justify-center gap-2 text-xs text-zinc-300"
           >
             <Delete className="w-4 h-4 text-zinc-400" aria-hidden="true" />
-            <span>Borrar (Backspace)</span>
+            <span>Backspace</span>
           </button>
           <button
             type="button"

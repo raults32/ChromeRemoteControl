@@ -26,7 +26,6 @@ def create_tray_icon_image(paused: bool = False) -> Image.Image:
     accent = "#f59e0b" if paused else "#22d3ee"
     draw.rounded_rectangle((4, 4, size - 4, size - 4), radius=16, fill="#09090b", outline=accent, width=3)
     draw.ellipse((16, 16, size - 16, size - 16), fill=bg)
-    # Remote wave / cursor dot
     draw.ellipse((26, 26, size - 26, size - 26), fill="#ffffff")
     return img
 
@@ -39,7 +38,6 @@ class SystemTrayApp:
         self._main_script = str(main_script_path)
         self._icon: object | None = None
         self._tk_lock = threading.Lock()
-        self._qr_win_open = False
 
     def start(self) -> None:
         if pystray is None:
@@ -83,7 +81,7 @@ class SystemTrayApp:
             url = build_pairing_url(ip, port, secret)
 
             root = tk.Tk()
-            root.title("Chrome Remote Control — Conectar Celular")
+            root.title("Chrome Remote Control — Pair Phone")
             root.configure(bg="#09090b")
             root.resizable(False, False)
             root.attributes("-topmost", True)
@@ -93,7 +91,7 @@ class SystemTrayApp:
 
             tk.Label(
                 container,
-                text="Escanea para conectar tu celular",
+                text="Scan to connect your phone",
                 fg="#f8fafc",
                 bg="#09090b",
                 font=("Segoe UI", 13, "bold"),
@@ -113,7 +111,7 @@ class SystemTrayApp:
             qr_lbl.image = qr_tk  # type: ignore[attr-defined]
             qr_lbl.pack(pady=(0, 14))
 
-            pin_var = tk.StringVar(value=f"PIN actual:  {pin}")
+            pin_var = tk.StringVar(value=f"Current PIN:  {pin}")
             tk.Label(
                 container,
                 textvariable=pin_var,
@@ -129,7 +127,7 @@ class SystemTrayApp:
 
             def regenerate() -> None:
                 new_pin = config.regenerate_pin()
-                pin_var.set(f"PIN actual:  {new_pin}")
+                pin_var.set(f"Current PIN:  {new_pin}")
                 new_url = build_pairing_url(ip, port, str(config.get("pairing_secret", "")))
                 new_pil = generate_qr_pil(new_url, box_size=7, border=2)
                 new_tk = ImageTk.PhotoImage(new_pil)
@@ -138,7 +136,7 @@ class SystemTrayApp:
 
             tk.Button(
                 btn_frame,
-                text="Nuevo PIN / QR",
+                text="New PIN / QR",
                 command=regenerate,
                 bg="#27272a",
                 fg="#f8fafc",
@@ -151,7 +149,7 @@ class SystemTrayApp:
 
             tk.Button(
                 btn_frame,
-                text="Cerrar",
+                text="Close",
                 command=root.destroy,
                 bg="#0891b2",
                 fg="#ffffff",
@@ -180,20 +178,20 @@ class SystemTrayApp:
             root.attributes("-topmost", True)
             current_pin = str(config.get("pin", ""))
             new_pin = simpledialog.askstring(
-                "Cambiar PIN de Acceso",
-                f"PIN actual: {current_pin}\nIngresa el nuevo PIN numérico (4 a 6 dígitos):",
+                "Change Access PIN",
+                f"Current PIN: {current_pin}\nEnter a new numeric PIN (4 to 6 digits):",
                 parent=root,
             )
             if new_pin is not None:
                 try:
                     saved = config.set_pin(new_pin, revoke_sessions=True)
                     messagebox.showinfo(
-                        "PIN actualizado",
-                        f"El nuevo PIN es: {saved}\nLas sesiones anteriores fueron cerradas por seguridad.",
+                        "PIN Updated",
+                        f"Your new PIN is: {saved}\nPrevious sessions were signed out for security.",
                         parent=root,
                     )
                 except ValueError as exc:
-                    messagebox.showerror("PIN inválido", str(exc), parent=root)
+                    messagebox.showerror("Invalid PIN", str(exc), parent=root)
             root.destroy()
         except Exception:
             pass
@@ -226,31 +224,31 @@ class SystemTrayApp:
             return
         menu = pystray.Menu(
             pystray.MenuItem(
-                "Ver Código QR y PIN",
+                "View QR Code & PIN",
                 lambda icon, item: self._show_qr_window_async(),
                 default=True,
             ),
             pystray.MenuItem(
-                "Cambiar PIN...",
+                "Change PIN...",
                 lambda icon, item: self._change_pin_async(),
             ),
             pystray.MenuItem(
-                "Abrir Panel en PC",
+                "Open Panel on PC",
                 self._open_local_ui,
             ),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem(
-                "Pausar control remoto",
+                "Pause remote control",
                 self._toggle_pause,
                 checked=lambda item: bool(config.get("paused", False)),
             ),
             pystray.MenuItem(
-                "Iniciar con el sistema",
+                "Launch on startup",
                 self._toggle_autostart,
                 checked=lambda item: bool(config.get("start_with_system", False)),
             ),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Salir", self._quit_app),
+            pystray.MenuItem("Quit", self._quit_app),
         )
         paused = bool(config.get("paused", False))
         self._icon = pystray.Icon(

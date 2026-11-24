@@ -8,7 +8,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
     if (/iPhone/i.test(ua)) return "iPhone";
     if (/iPad/i.test(ua)) return "iPad";
     if (/Android/i.test(ua)) return "Android";
-    return "Celular";
+    return "Phone";
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
     e?.preventDefault();
     const clean = (explicitPin ?? pin).replace(/\D/g, "").slice(0, 6);
     if (clean.length < 4) {
-      setError("Ingresa el PIN numérico de 4 a 6 dígitos que muestra tu PC.");
+      setError("Enter the 4 to 6 digit numeric PIN shown on your PC.");
       pinInputRef.current?.focus();
       return;
     }
@@ -32,13 +32,13 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
       });
       const data = await res.json();
       if (!res.ok || !data.token) {
-        throw new Error(data.detail || "PIN incorrecto");
+        throw new Error(data.detail || "Incorrect PIN");
       }
       vibrate?.([15, 40, 20]);
       onAuthenticated(data.token);
     } catch (err) {
       vibrate?.([40, 50, 40]);
-      setError(err.message || "No se pudo conectar con el servidor en la PC.");
+      setError(err.message || "Could not connect to the PC server.");
       pinInputRef.current?.focus();
     } finally {
       setLoading(false);
@@ -75,12 +75,12 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
         </h1>
         <p id="pin-hint" className="text-xs text-zinc-400 text-center mb-5 flex items-center justify-center gap-1.5">
           <Wifi className="w-3.5 h-3.5 text-cyan-400 shrink-0" aria-hidden="true" />
-          <span>Ingresa el PIN de 4 a 6 dígitos mostrado en tu PC</span>
+          <span>Enter the 4–6 digit PIN displayed on your PC</span>
         </p>
 
         <div className="mb-3.5">
           <label htmlFor="device-name" className="block text-xs text-zinc-300 font-medium mb-1">
-            Nombre de este dispositivo
+            Device name
           </label>
           <div className="relative flex items-center">
             <Smartphone className="w-4 h-4 text-zinc-500 absolute left-3 pointer-events-none" aria-hidden="true" />
@@ -98,10 +98,9 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
           </div>
         </div>
 
-        {/* Single-field numeric PIN input (supports paste, autofill, keyboard & tactile keypad) */}
         <div className="mb-4">
           <label htmlFor="pin-code" className="block text-xs text-zinc-300 font-medium mb-1">
-            PIN de autorización <span aria-hidden="true">*</span>
+            Authorization PIN <span aria-hidden="true">*</span>
           </label>
           <input
             ref={pinInputRef}
@@ -117,7 +116,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
             autoCapitalize="none"
             spellCheck={false}
             enterKeyHint="done"
-            placeholder="Ej. 4826"
+            placeholder="e.g. 4826"
             aria-invalid={error ? "true" : undefined}
             aria-describedby={error ? "pin-error" : "pin-hint"}
             value={pin}
@@ -139,8 +138,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
           </p>
         )}
 
-        {/* Tactile One-Handed Numeric Pad */}
-        <div className="grid grid-cols-3 gap-2 mb-4" role="group" aria-label="Teclado numérico rápido">
+        <div className="grid grid-cols-3 gap-2 mb-4" role="group" aria-label="Numeric keypad">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
             <button
               key={d}
@@ -160,7 +158,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
             }}
             className="bg-zinc-900/60 active:bg-zinc-800 border border-zinc-800/70 rounded-2xl py-2.5 text-xs font-medium text-zinc-400"
           >
-            Limpiar
+            Clear
           </button>
           <button
             type="button"
@@ -171,7 +169,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Borrar último dígito"
+            aria-label="Delete last digit"
             onClick={handleBackspace}
             className="bg-zinc-900/60 active:bg-zinc-800 border border-zinc-800/70 rounded-2xl py-2.5 flex items-center justify-center text-zinc-300"
           >
@@ -184,7 +182,7 @@ export default function AuthScreen({ onAuthenticated, vibrate }) {
           disabled={loading}
           className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-zinc-800 disabled:text-zinc-500 text-black font-bold rounded-2xl py-3.5 flex items-center justify-center gap-2"
         >
-          <span>{loading ? "Verificando..." : "Conectar al PC"}</span>
+          <span>{loading ? "Verifying..." : "Connect to PC"}</span>
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </form>

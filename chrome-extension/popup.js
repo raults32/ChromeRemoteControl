@@ -10,10 +10,10 @@ function renderStatus(connected, port) {
   }
   if (connected) {
     statusBadge.classList.add("online");
-    statusText.textContent = "Conectado";
+    statusText.textContent = "Connected";
   } else {
     statusBadge.classList.remove("online");
-    statusText.textContent = "Sin servidor";
+    statusText.textContent = "Server offline";
   }
 }
 
@@ -35,7 +35,7 @@ saveBtn.addEventListener("click", async () => {
 });
 
 reconnectBtn.addEventListener("click", async () => {
-  statusText.textContent = "Conectando...";
+  statusText.textContent = "Connecting...";
   await chrome.runtime.sendMessage({ source: "popup", type: "POPUP_RECONNECT" });
   setTimeout(refreshStatus, 500);
 });
