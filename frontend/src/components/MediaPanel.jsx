@@ -57,7 +57,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
   return (
     <div className="space-y-4 pb-6">
       {/* Now Playing Header & Interactive Scrubber */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-3xl p-4 space-y-3">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-3xl p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-400 mb-1">
@@ -75,9 +75,9 @@ export default function MediaPanel({ serverState, send, vibrate }) {
         <button
           type="button"
           onClick={() => fireMedia("skip_intro")}
-          className={`w-full rounded-2xl py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 border transition-all ${
+          className={`w-full rounded-2xl py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 border transition-colors ${
             media.canSkipAd
-              ? "bg-amber-400 text-black border-amber-300 shadow-lg shadow-amber-500/20 animate-pulse"
+              ? "bg-amber-400 text-black border-amber-300 shadow-lg shadow-amber-500/20"
               : "bg-black text-zinc-300 border-zinc-800 active:bg-zinc-900"
           }`}
         >
@@ -85,16 +85,19 @@ export default function MediaPanel({ serverState, send, vibrate }) {
           <span>{media.canSkipAd ? media.skipLabel || "Saltar Intro / Anuncio" : "Saltar Intro / Anuncio"}</span>
         </button>
 
-        {/* Interactive Scrubber */}
+        {/* Interactive Scrubber with explicit associated <label> */}
         <div className="space-y-1 pt-1">
+          <label htmlFor="video-scrubber" className="visually-hidden">
+            Posición de reproducción del video
+          </label>
           <input
+            id="video-scrubber"
             type="range"
             min={0}
             max={duration || 100}
             step={1}
             disabled={duration <= 0}
             value={Math.min(scrubValue, duration || 100)}
-            aria-label="Barra de progreso del video"
             onPointerDown={() => setIsScrubbing(true)}
             onChange={(e) => {
               setIsScrubbing(true);
@@ -110,7 +113,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
           </div>
         </div>
 
-        {/* Primary Transport Controls */}
+        {/* Primary Transport Controls (fixed accessible label with aria-pressed per motion guide) */}
         <div className="flex items-center justify-center gap-4 py-1">
           <button
             type="button"
@@ -123,7 +126,8 @@ export default function MediaPanel({ serverState, send, vibrate }) {
 
           <button
             type="button"
-            aria-label={media.paused ? "Reproducir" : "Pausar"}
+            aria-label="Reproducir o pausar video"
+            aria-pressed={!media.paused}
             onClick={() => fireMedia("play_pause")}
             className="w-18 h-18 rounded-3xl bg-cyan-500 active:bg-cyan-400 text-black flex items-center justify-center shadow-lg shadow-cyan-500/20"
           >
@@ -145,7 +149,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
         </div>
 
         {/* Precision Seek Jumps (-30s, -10s, -5s, +5s, +10s, +30s) */}
-        <div className="grid grid-cols-6 gap-1.5 pt-1">
+        <div className="grid grid-cols-6 gap-1.5 pt-1" role="group" aria-label="Saltos rápidos de tiempo">
           {[-30, -10, -5, 5, 10, 30].map((sec) => (
             <button
               key={sec}
@@ -160,13 +164,14 @@ export default function MediaPanel({ serverState, send, vibrate }) {
       </section>
 
       {/* Video View & Subtitles Options */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Opciones de Reproductor
-        </h3>
+        </h2>
         <div className="grid grid-cols-4 gap-2">
           <button
             type="button"
+            aria-pressed={Boolean(media.captionsEnabled)}
             onClick={() => fireMedia("captions")}
             className={`rounded-xl py-2.5 px-2 border flex flex-col items-center gap-1 text-xs ${
               media.captionsEnabled
@@ -198,6 +203,7 @@ export default function MediaPanel({ serverState, send, vibrate }) {
 
           <button
             type="button"
+            aria-pressed={Boolean(media.pipActive)}
             onClick={() => fireMedia("pip")}
             className={`rounded-xl py-2.5 px-2 border flex flex-col items-center gap-1 text-xs ${
               media.pipActive
@@ -213,30 +219,35 @@ export default function MediaPanel({ serverState, send, vibrate }) {
         {/* Playback Speed Selector */}
         <div>
           <span className="block text-[11px] text-zinc-400 mb-1.5">Velocidad de reproducción</span>
-          <div className="grid grid-cols-6 gap-1.5">
-            {RATES.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => fireMedia("set_rate", { rate: r })}
-                className={`rounded-xl py-2 text-xs font-semibold border ${
-                  Math.abs((media.playbackRate || 1) - r) < 0.05
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-black border-zinc-800 text-zinc-400"
-                }`}
-              >
-                {r}x
-              </button>
-            ))}
+          <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Velocidad de reproducción">
+            {RATES.map((r) => {
+              const active = Math.abs((media.playbackRate || 1) - r) < 0.05;
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => fireMedia("set_rate", { rate: r })}
+                  className={`rounded-xl py-2 text-xs font-semibold border ${
+                    active
+                      ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                      : "bg-black border-zinc-800 text-zinc-400"
+                  }`}
+                >
+                  {r}x
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Dual Audio Controls: Video Mute vs Master PC Volume */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
+            aria-pressed={Boolean(media.muted)}
             onClick={() => fireMedia("mute")}
             className={`rounded-xl py-2.5 px-3 border flex items-center justify-center gap-2 text-xs font-semibold ${
               media.muted
@@ -245,11 +256,12 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             }`}
           >
             {media.muted ? <VolumeX className="w-4 h-4" aria-hidden="true" /> : <Volume2 className="w-4 h-4 text-cyan-400" aria-hidden="true" />}
-            <span>{media.muted ? "Video Silenciado" : "Silenciar Video"}</span>
+            <span>Silenciar Video</span>
           </button>
 
           <button
             type="button"
+            aria-pressed={Boolean(audio.muted)}
             onClick={() => {
               vibrate?.(14);
               send("system", "audio_toggle_mute", {});
@@ -261,18 +273,21 @@ export default function MediaPanel({ serverState, send, vibrate }) {
             }`}
           >
             <MonitorSpeaker className="w-4 h-4 text-amber-400" aria-hidden="true" />
-            <span>{audio.muted ? "PC en Mute" : `PC Vol: ${audio.volume}%`}</span>
+            <span>Mute PC ({audio.volume}%)</span>
           </button>
         </div>
 
         <div className="flex items-center gap-3">
           <Volume2 className="w-4 h-4 text-zinc-400 shrink-0" aria-hidden="true" />
+          <label htmlFor="media-pc-volume" className="visually-hidden">
+            Volumen maestro de la PC
+          </label>
           <input
+            id="media-pc-volume"
             type="range"
             min={0}
             max={100}
             value={audio.volume ?? 50}
-            aria-label="Volumen maestro de la PC"
             onChange={(e) => send("system", "audio_set_volume", { volume: Number(e.target.value) })}
             className="flex-1 cursor-pointer"
           />

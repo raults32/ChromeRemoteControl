@@ -9,6 +9,9 @@
     "preview": "vite preview --host"
   },
   "dependencies": {
+    "@microsoft/focusgroup-polyfill": "^1.6.0",
+    "@oddbird/popover-polyfill": "^0.7.3",
+    "input-switch-polyfill": "^1.12.0",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

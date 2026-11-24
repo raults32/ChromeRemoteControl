@@ -73,16 +73,27 @@ export default function ChromePanel({ serverState, send, vibrate }) {
   return (
     <div className="space-y-4 pb-6">
       {/* Active Tab Banner */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
         <div className="flex items-center gap-2.5">
           {activeTab?.favIconUrl ? (
-            <img src={activeTab.favIconUrl} alt="" className="w-5 h-5 rounded shrink-0" />
+            <img
+              src={activeTab.favIconUrl}
+              alt=""
+              width="20"
+              height="20"
+              decoding="async"
+              className="w-5 h-5 rounded shrink-0"
+            />
           ) : (
-            <div className="w-5 h-5 rounded bg-zinc-800 shrink-0" />
+            <div className="w-5 h-5 rounded bg-zinc-800 shrink-0" aria-hidden="true" />
           )}
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-zinc-100 truncate">
-              {activeTab ? activeTab.title : serverState.extensionConnected ? "Sin pestaña activa" : "Modo Atajos de Teclado (sin extensión)"}
+              {activeTab
+                ? activeTab.title
+                : serverState.extensionConnected
+                ? "Sin pestaña activa"
+                : "Modo Atajos de Teclado (sin extensión)"}
             </p>
             <p className="text-[11px] text-zinc-400 truncate">
               {activeTab?.domain || "Usa la barra inferior para abrir cualquier sitio o búsqueda"}
@@ -91,71 +102,86 @@ export default function ChromePanel({ serverState, send, vibrate }) {
         </div>
       </section>
 
-      {/* Smart Omnibox & Search Engine Selector */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
-        <form onSubmit={handleOmniboxSubmit} className="space-y-2.5">
-          <div className="flex gap-2">
-            <div className="relative flex-1 min-w-0">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-              <input
-                type="text"
-                value={omniboxText}
-                onChange={(e) => setOmniboxText(e.target.value)}
-                placeholder="URL o búsqueda rápida..."
-                aria-label="Barra de dirección o búsqueda remota"
-                className="w-full bg-black border border-zinc-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-cyan-500 active:bg-cyan-400 text-black font-bold px-4 rounded-xl text-sm shrink-0"
-            >
-              Ir
-            </button>
-          </div>
-
-          {/* Engine Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            {ENGINES.map((eng) => (
+      {/* Smart Omnibox & Search Engine Selector wrapped in semantic <search> */}
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
+        <search>
+          <form action="/omnibox" method="get" onSubmit={handleOmniboxSubmit} className="space-y-2.5">
+            <label htmlFor="omnibox-input" className="block text-xs font-semibold text-zinc-300">
+              Dirección URL o búsqueda rápida
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1 min-w-0">
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                <input
+                  id="omnibox-input"
+                  name="q"
+                  type="search"
+                  value={omniboxText}
+                  onChange={(e) => setOmniboxText(e.target.value)}
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  enterKeyHint="go"
+                  placeholder="Ej. youtube.com o tutorial FastAPI"
+                  className="w-full bg-black border border-zinc-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500"
+                />
+              </div>
               <button
-                key={eng.id}
-                type="button"
-                onClick={() => {
-                  vibrate?.(8);
-                  setEngine(eng.id);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 border transition-colors ${
-                  engine === eng.id
-                    ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                    : "bg-black border-zinc-800 text-zinc-400"
-                }`}
+                type="submit"
+                className="bg-cyan-500 active:bg-cyan-400 text-black font-bold px-4 rounded-xl text-sm shrink-0"
               >
-                {eng.label}
+                Abrir
               </button>
-            ))}
-          </div>
+            </div>
 
-          <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={openInNewTab}
-              onChange={(e) => setOpenInNewTab(e.target.checked)}
-              className="w-4 h-4 rounded"
-            />
-            <span>Abrir búsquedas en una pestaña nueva</span>
-          </label>
-        </form>
+            {/* Engine Chips with scroll-driven edge-fade masks */}
+            <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Motor de búsqueda">
+              {ENGINES.map((eng) => {
+                const selected = engine === eng.id;
+                return (
+                  <button
+                    key={eng.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      vibrate?.(8);
+                      setEngine(eng.id);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                      selected
+                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                        : "bg-black border-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {eng.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <label htmlFor="omnibox-newtab" className="flex items-center justify-between gap-2 text-xs text-zinc-300 cursor-pointer pt-0.5">
+              <span>Abrir en una pestaña nueva</span>
+              <input
+                id="omnibox-newtab"
+                name="newTab"
+                type="checkbox"
+                {...({ switch: "" })}
+                checked={openInNewTab}
+                onChange={(e) => setOpenInNewTab(e.target.checked)}
+              />
+            </label>
+          </form>
+        </search>
       </section>
 
       {/* Navigation Controls */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
           Navegación
         </h2>
         <div className="grid grid-cols-6 gap-2">
           <button
             type="button"
-            aria-label="Atrás"
             onClick={() => fireChrome("nav_back")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -164,7 +190,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Adelante"
             onClick={() => fireChrome("nav_forward")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -173,7 +198,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Recargar página"
             onClick={() => fireChrome("nav_reload")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -182,7 +206,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Recargar sin caché"
             onClick={() => fireChrome("nav_hard_reload")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -191,7 +214,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Detener carga"
             onClick={() => fireChrome("nav_stop")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -200,7 +222,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
-            aria-label="Página de inicio"
             onClick={() => fireChrome("nav_home")}
             className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-3 flex flex-col items-center justify-center gap-1"
           >
@@ -212,7 +233,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
 
       {/* Quick Tab / Window Actions & Zoom / Fullscreen */}
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
+        <div className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
             Pestañas y Ventanas
           </h2>
@@ -244,14 +265,14 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </div>
         </div>
 
-        <div className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
+        <div className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">
             Zoom y Vista
           </h2>
           <div className="grid grid-cols-4 gap-2">
             <button
               type="button"
-              aria-label="Alejar zoom"
+              aria-label="Alejar zoom -"
               onClick={() => fireChrome("zoom_out")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs"
             >
@@ -260,7 +281,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </button>
             <button
               type="button"
-              aria-label="Restablecer zoom a 100%"
+              aria-label="Restablecer zoom 100%"
               onClick={() => fireChrome("zoom_reset")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center justify-center text-xs font-semibold text-cyan-300"
             >
@@ -268,7 +289,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             </button>
             <button
               type="button"
-              aria-label="Acercar zoom"
+              aria-label="Acercar zoom +"
               onClick={() => fireChrome("zoom_in")}
               className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs"
             >
@@ -288,45 +309,58 @@ export default function ChromePanel({ serverState, send, vibrate }) {
         </div>
       </section>
 
-      {/* Find in Page (Ctrl+F) */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
-        <form onSubmit={(e) => handleFindSubmit(e, false)} className="flex items-center gap-2">
-          <div className="relative flex-1 min-w-0">
-            <FileSearch className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-            <input
-              type="search"
-              value={findQuery}
-              onChange={(e) => setFindQuery(e.target.value)}
-              placeholder="Buscar texto en la página (Ctrl+F)..."
-              aria-label="Buscar texto dentro de la página"
-              className="w-full bg-black border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400"
-            />
-          </div>
-          <button
-            type="button"
-            aria-label="Coincidencia anterior"
-            onClick={(e) => handleFindSubmit(e, true)}
-            className="bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300"
-          >
-            Ant.
-          </button>
-          <button
-            type="submit"
-            className="bg-zinc-800 active:bg-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-cyan-300"
-          >
-            Sig.
-          </button>
-        </form>
+      {/* Find in Page (Ctrl+F) inside semantic <search> */}
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5">
+        <search>
+          <form action="/find" method="get" onSubmit={(e) => handleFindSubmit(e, false)} className="space-y-1.5">
+            <label htmlFor="page-find-input" className="block text-xs font-semibold text-zinc-300">
+              Buscar texto dentro de la página (Ctrl+F)
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-0">
+                <FileSearch className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                <input
+                  id="page-find-input"
+                  name="find"
+                  type="search"
+                  value={findQuery}
+                  onChange={(e) => setFindQuery(e.target.value)}
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  enterKeyHint="search"
+                  placeholder="Palabra o frase..."
+                  className="w-full bg-black border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Coincidencia anterior Ant."
+                onClick={(e) => handleFindSubmit(e, true)}
+                className="bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300"
+              >
+                Ant.
+              </button>
+              <button
+                type="submit"
+                className="bg-zinc-800 active:bg-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-cyan-300"
+              >
+                Sig.
+              </button>
+            </div>
+          </form>
+        </search>
       </section>
 
       {/* Bookmarks, History & Downloads Quick Access */}
-      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
+      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-3.5 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Acceso Rápido del Navegador
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
+            aria-expanded={drawerTab === "bookmarks"}
             onClick={() => openDrawer("bookmarks")}
             className={`rounded-xl py-2.5 px-2 border flex items-center justify-center gap-1.5 text-xs font-medium ${
               drawerTab === "bookmarks"
@@ -339,6 +373,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
+            aria-expanded={drawerTab === "history"}
             onClick={() => openDrawer("history")}
             className={`rounded-xl py-2.5 px-2 border flex items-center justify-center gap-1.5 text-xs font-medium ${
               drawerTab === "history"
@@ -351,6 +386,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
           <button
             type="button"
+            aria-expanded={drawerTab === "downloads"}
             onClick={() => openDrawer("downloads")}
             className={`rounded-xl py-2.5 px-2 border flex items-center justify-center gap-1.5 text-xs font-medium ${
               drawerTab === "downloads"
@@ -363,7 +399,6 @@ export default function ChromePanel({ serverState, send, vibrate }) {
           </button>
         </div>
 
-        {/* Dynamic Drawer Content */}
         {drawerTab === "bookmarks" && (
           <div className="space-y-1.5 max-h-64 overflow-y-auto pt-1">
             {!serverState.extensionConnected ? (
@@ -378,20 +413,23 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             ) : serverState.bookmarks.length === 0 ? (
               <p className="text-xs text-zinc-500 text-center py-3">No se encontraron marcadores guardados.</p>
             ) : (
-              serverState.bookmarks.map((bm) => (
-                <button
-                  key={bm.id}
-                  type="button"
-                  onClick={() => fireChrome("omnibox", { url: bm.url, newTab: true })}
-                  className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-zinc-100 truncate">{bm.title}</p>
-                    <p className="text-[11px] text-zinc-500 truncate">{bm.domain}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
-                </button>
-              ))
+              <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+                {serverState.bookmarks.map((bm) => (
+                  <li key={bm.id}>
+                    <button
+                      type="button"
+                      onClick={() => fireChrome("omnibox", { url: bm.url, newTab: true })}
+                      className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-zinc-100 truncate">{bm.title}</p>
+                        <p className="text-[11px] text-zinc-500 truncate">{bm.domain}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
@@ -402,25 +440,28 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               <button
                 type="button"
                 onClick={() => fireChrome("open_history")}
-                className="text-[11px] text-cyan-400 underline px-1 py-0.5"
+                className="text-[11px] text-cyan-400 underline px-2 py-1"
               >
                 Abrir chrome://history en PC
               </button>
             </div>
-            {serverState.history.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => fireChrome("omnibox", { url: item.url, newTab: true })}
-                className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
-              >
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-zinc-100 truncate">{item.title}</p>
-                  <p className="text-[11px] text-zinc-500 truncate">{item.domain}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
-              </button>
-            ))}
+            <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+              {serverState.history.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => fireChrome("omnibox", { url: item.url, newTab: true })}
+                    className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-zinc-100 truncate">{item.title}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{item.domain}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -430,7 +471,7 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               <button
                 type="button"
                 onClick={() => fireChrome("open_downloads")}
-                className="text-[11px] text-cyan-400 underline px-1 py-0.5"
+                className="text-[11px] text-cyan-400 underline px-2 py-1"
               >
                 Abrir chrome://downloads en PC
               </button>
@@ -438,17 +479,19 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             {serverState.downloads.length === 0 ? (
               <p className="text-xs text-zinc-500 text-center py-3">Sin descargas recientes.</p>
             ) : (
-              serverState.downloads.map((dl) => (
-                <div
-                  key={dl.id}
-                  className="bg-black border border-zinc-800/80 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-zinc-100 truncate">{dl.filename}</p>
-                    <p className="text-[11px] text-zinc-500">{dl.state}</p>
-                  </div>
-                </div>
-              ))
+              <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+                {serverState.downloads.map((dl) => (
+                  <li
+                    key={dl.id}
+                    className="bg-black border border-zinc-800/80 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-zinc-100 truncate">{dl.filename}</p>
+                      <p className="text-[11px] text-zinc-500">{dl.state}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}

@@ -21,12 +21,12 @@ const SPECIAL_KEYS = [
   { label: "Esc", key: "esc" },
   { label: "Tab", key: "tab" },
   { label: "Enter", key: "enter" },
-  { label: "⌫", key: "backspace", aria: "Retroceso" },
+  { label: "⌫", key: "backspace", aria: "Retroceso ⌫" },
   { label: "Supr", key: "delete" },
-  { label: "←", key: "left", aria: "Flecha izquierda" },
-  { label: "↑", key: "up", aria: "Flecha arriba" },
-  { label: "↓", key: "down", aria: "Flecha abajo" },
-  { label: "→", key: "right", aria: "Flecha derecha" },
+  { label: "←", key: "left", aria: "Flecha izquierda ←" },
+  { label: "↑", key: "up", aria: "Flecha arriba ↑" },
+  { label: "↓", key: "down", aria: "Flecha abajo ↓" },
+  { label: "→", key: "right", aria: "Flecha derecha →" },
   { label: "Alt+Tab", shortcut: "alt_tab" },
   { label: "Win/Cmd", key: "win" },
   { label: "Inicio", key: "home" },
@@ -58,7 +58,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
   const liveInputRef = useRef(null);
   const recognitionRef = useRef(null);
 
-  // Gesture tracking state in ref for zero re-render latency (< 1ms JS path)
   const gestureRef = useRef({
     touchCount: 0,
     maxTouches: 0,
@@ -73,7 +72,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     pinchAccum: 0
   });
 
-  // Automatically stop screen streaming when leaving Touchpad tab or disabling spy mode
   useEffect(() => {
     if (screenSpy) {
       send("system", "screen_start", { fps: serverState.screen?.fps || 8 });
@@ -85,7 +83,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     };
   }, [screenSpy, send]);
 
-  // Cleanup speech recognition on unmount
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
@@ -98,9 +95,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     };
   }, []);
 
-  // ------------------------------------------------------------------
-  // Multi-touch Low-Latency Touchpad Handlers
-  // ------------------------------------------------------------------
   const handleTouchStart = (e) => {
     const g = gestureRef.current;
     const touches = e.touches;
@@ -115,7 +109,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
       g.lastY = t.clientY;
       g.totalMove = 0;
 
-      // Double-tap + hold initiates Drag & Drop!
       if (now - g.lastTapTime < 280 && !g.isDragging) {
         g.isDragging = true;
         setDraggingIndicator(true);
@@ -162,7 +155,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         const centerDy = center.y - g.lastTwoCenter.y;
         g.totalMove += Math.hypot(centerDx, centerDy) + Math.abs(distDelta);
 
-        // Distinguish Pinch-to-Zoom vs 2-Finger Scroll
         if (Math.abs(distDelta) > 6 && Math.abs(distDelta) > Math.hypot(centerDx, centerDy) * 1.35) {
           g.pinchAccum += distDelta;
           if (Math.abs(g.pinchAccum) >= 26) {
@@ -170,7 +162,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             g.pinchAccum = 0;
           }
         } else {
-          // Smooth 2-finger vertical & horizontal scroll
           const scrollX = centerDx / 16;
           const scrollY = -centerDy / 14;
           if (Math.abs(scrollX) >= 0.06 || Math.abs(scrollY) >= 0.06) {
@@ -212,7 +203,6 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     }
   };
 
-  // Desktop mouse testing support inside browser preview
   const mouseDownRef = useRef(null);
   const handleMouseDownPad = (e) => {
     if ("ontouchstart" in window) return;
@@ -235,10 +225,12 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
     mouseDownRef.current = null;
   };
 
-  // ------------------------------------------------------------------
-  // Live Keyboard & Voice Dictation
-  // ------------------------------------------------------------------
+  // IME-safe live typing handler (checks isComposing per forms §7)
   const handleLiveInputChange = (e) => {
+    if (e.nativeEvent?.isComposing) {
+      setLiveValue(e.target.value);
+      return;
+    }
     const val = e.target.value;
     if (val === "") {
       send("system", "key_press", { key: "backspace" });
@@ -257,6 +249,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
   };
 
   const handleLiveKeyDown = (e) => {
+    if (e.nativeEvent?.isComposing) return;
     if (e.key === "Enter") {
       e.preventDefault();
       vibrate?.(10);
@@ -307,26 +300,18 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
       }
     };
 
-    rec.onerror = () => {
-      setListening(false);
-    };
-
-    rec.onend = () => {
-      setListening(false);
-    };
+    rec.onerror = () => setListening(false);
+    rec.onend = () => setListening(false);
 
     recognitionRef.current = rec;
     rec.start();
   };
 
-  // ------------------------------------------------------------------
-  // Interactive Screen Preview Tap Handler
-  // ------------------------------------------------------------------
   const handleScreenTap = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const xRatio = (e.clientX - rect.left) / rect.width;
-    const yRatio = (e.clientY - rect.top) / rect.height;
+    const xRatio = e.detail === 0 ? 0.5 : (e.clientX - rect.left) / rect.width;
+    const yRatio = e.detail === 0 ? 0.5 : (e.clientY - rect.top) / rect.height;
     vibrate?.(14);
     send("system", "screen_tap", {
       xRatio,
@@ -343,6 +328,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
       <div className="grid grid-cols-3 gap-2">
         <button
           type="button"
+          aria-pressed={showKeyboard}
           onClick={() => {
             vibrate?.(10);
             const next = !showKeyboard;
@@ -363,19 +349,21 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
 
         <button
           type="button"
+          aria-pressed={listening}
           onClick={toggleVoiceDictation}
           className={`rounded-2xl py-2.5 px-3 border flex items-center justify-center gap-2 text-xs font-semibold ${
             listening
-              ? "bg-rose-500/25 border-rose-400 text-rose-300 animate-pulse"
+              ? "bg-rose-500/25 border-rose-400 text-rose-300"
               : "bg-[#121212] border-zinc-800 text-zinc-200"
           }`}
         >
           {listening ? <MicOff className="w-4 h-4" aria-hidden="true" /> : <Mic className="w-4 h-4 text-cyan-400" aria-hidden="true" />}
-          <span>{listening ? "Escuchando..." : "Dictar Voz"}</span>
+          <span>Dictar Voz</span>
         </button>
 
         <button
           type="button"
+          aria-pressed={screenSpy}
           onClick={() => {
             vibrate?.(12);
             setScreenSpy((s) => !s);
@@ -391,9 +379,9 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         </button>
       </div>
 
-      {/* Optional Live Screen Mirroring ("Modo Espiar Pantalla") */}
+      {/* Live Screen Mirroring ("Modo Espiar Pantalla") using semantic <button> */}
       {screenSpy && (
-        <section className="bg-[#121212] border border-emerald-500/40 rounded-2xl p-2.5 space-y-2">
+        <section className="squircle-card bg-[#121212] border border-emerald-500/40 rounded-2xl p-2.5 space-y-2">
           <div className="flex items-center justify-between gap-2 px-1">
             <span className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1.5">
               <MousePointerClick className="w-3.5 h-3.5" aria-hidden="true" />
@@ -402,6 +390,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
+                aria-pressed={screenRightClick}
                 onClick={() => setScreenRightClick((v) => !v)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
                   screenRightClick
@@ -411,8 +400,11 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
               >
                 {screenRightClick ? "Clic Der." : "Clic Izq."}
               </button>
+              <label htmlFor="spy-fps-select" className="visually-hidden">
+                Cuadros por segundo de vista previa
+              </label>
               <select
-                aria-label="Cuadros por segundo de vista previa"
+                id="spy-fps-select"
                 value={serverState.screen?.fps || 8}
                 onChange={(e) => send("system", "screen_config", { fps: Number(e.target.value) })}
                 className="bg-black border border-zinc-800 rounded-lg px-2 py-1 text-[11px] text-zinc-300"
@@ -425,68 +417,78 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
             </div>
           </div>
 
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="Vista previa interactiva de la pantalla del PC"
+          <button
+            type="button"
+            aria-label="Hacer clic en la vista previa en vivo de la pantalla del PC"
             onClick={handleScreenTap}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") send("system", "mouse_click", { button: "left", count: 1 });
-            }}
-            className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-zinc-800 cursor-crosshair flex items-center justify-center"
+            className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-zinc-800 cursor-crosshair flex items-center justify-center p-0"
           >
             {serverState.screenFrame?.dataUrl ? (
               <img
                 src={serverState.screenFrame.dataUrl}
-                alt="Pantalla en vivo de la PC"
+                alt="Vista actual del escritorio de la PC"
+                width="960"
+                height="540"
                 draggable={false}
                 className="w-full h-full object-contain pointer-events-none"
               />
             ) : (
               <span className="text-xs text-zinc-500">Recibiendo transmisión de pantalla...</span>
             )}
-          </div>
+          </button>
         </section>
       )}
 
       {/* Expandable Remote Keyboard Drawer */}
       {showKeyboard && (
-        <section className="bg-[#121212] border border-zinc-800 rounded-2xl p-3 space-y-2.5">
+        <section className="squircle-card bg-[#121212] border border-zinc-800 rounded-2xl p-3 space-y-2.5">
           <div className="flex items-center gap-2">
+            <label htmlFor="live-key-input" className="visually-hidden">
+              Escritura tecla por tecla en vivo
+            </label>
             <input
+              id="live-key-input"
               ref={liveInputRef}
               type="text"
               value={liveValue}
               onChange={handleLiveInputChange}
+              onCompositionEnd={handleLiveInputChange}
               onKeyDown={handleLiveKeyDown}
-              aria-label="Escritura en vivo al instante en la PC"
-              placeholder="Escritura en vivo..."
-              className="w-28 bg-black border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="Vivo..."
+              className="w-24 bg-black border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-cyan-300"
             />
-            <form onSubmit={sendComposeText} className="flex-1 flex gap-1.5 min-w-0">
+            <form action="/type" method="post" onSubmit={sendComposeText} className="flex-1 flex gap-1.5 min-w-0">
+              <label htmlFor="compose-key-input" className="visually-hidden">
+                Escribir frase completa para enviar a la PC
+              </label>
               <input
+                id="compose-key-input"
+                name="text"
                 type="text"
                 value={composeText}
                 onChange={(e) => setComposeText(e.target.value)}
-                placeholder="Enviar frase, ñ, acentos o emojis..."
-                aria-label="Escribir texto completo para enviar a la PC"
-                className="flex-1 min-w-0 bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400"
+                enterKeyHint="send"
+                placeholder="Frase, ñ, acentos o emojis..."
+                className="flex-1 min-w-0 bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500"
               />
               <button
                 type="submit"
-                aria-label="Enviar texto"
+                aria-label="Enviar texto a la PC"
                 className="bg-cyan-500 active:bg-cyan-400 text-black rounded-xl px-3 flex items-center justify-center"
               >
                 <Send className="w-4 h-4" aria-hidden="true" />
               </button>
             </form>
           </div>
-          <p className="text-[10px] text-zinc-500 px-0.5">
-            El cuadro izquierdo escribe cada tecla en vivo; el derecho envía frases completas o emojis de golpe.
+          <p className="text-[10px] text-zinc-400 px-0.5">
+            El campo izquierdo refleja cada tecla al instante; el derecho envía frases completas con acentos o emojis.
           </p>
 
-          {/* Special Keys Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          {/* Special Keys Bar with scroll-driven edge-fade masks */}
+          <div className="h-scroller gap-1.5 pb-1" role="group" aria-label="Teclas especiales">
             {SPECIAL_KEYS.map((item) => (
               <button
                 key={item.label}
@@ -500,7 +502,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
                     send("system", "key_press", { key: item.key });
                   }
                 }}
-                className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-zinc-200 shrink-0"
+                className="bg-black active:bg-zinc-800 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-zinc-200"
               >
                 {item.label}
               </button>
@@ -530,11 +532,11 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
         </section>
       )}
 
-      {/* Main Low-Latency Touchpad Surface */}
+      {/* Main Low-Latency Touchpad Surface (canvas-like multi-axis input surface) */}
       <section className="space-y-2.5">
         <div
           role="application"
-          aria-label="Área táctil del touchpad virtual"
+          aria-label="Superficie táctil del touchpad virtual"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -543,22 +545,21 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
           onMouseMove={handleMouseMovePad}
           onMouseUp={handleMouseUpPad}
           style={{ touchAction: "none" }}
-          className={`relative w-full h-72 sm:h-80 rounded-3xl bg-[#0b0b0e] border transition-colors flex flex-col items-center justify-center select-none overflow-hidden ${
+          className={`squircle-card relative w-full h-72 sm:h-80 rounded-3xl bg-[#0b0b0e] border transition-colors flex flex-col items-center justify-center select-none overflow-clip ${
             draggingIndicator ? "border-cyan-400 shadow-inner shadow-cyan-500/20" : "border-zinc-800/90"
           }`}
         >
-          {/* Subtle corner guide marks */}
-          <div className="pointer-events-none text-center px-6 space-y-1 opacity-45">
-            <p className="text-xs font-semibold tracking-wider uppercase text-zinc-400">
+          <div className="pointer-events-none text-center px-6 space-y-1 opacity-55">
+            <h2 className="text-xs font-semibold tracking-wider uppercase text-zinc-300">
               {draggingIndicator ? "Arrastrando elemento..." : "Touchpad Multi-Touch"}
-            </p>
-            <p className="text-[11px] text-zinc-500">
+            </h2>
+            <p className="text-[11px] text-zinc-400">
               1 dedo: Mover / Clic • 2 dedos: Clic der. / Scroll / Pellizcar Zoom • Doble toque + mover: Arrastrar
             </p>
           </div>
         </div>
 
-        {/* Physical Virtual Mouse Buttons (Left, Middle, Right) */}
+        {/* Physical Virtual Mouse Buttons */}
         <div className="grid grid-cols-5 gap-2">
           <button
             type="button"
@@ -573,7 +574,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
 
           <button
             type="button"
-            aria-label="Clic central para abrir enlace en nueva pestaña"
+            aria-label="Central (abrir enlace en pestaña nueva)"
             onClick={() => {
               vibrate?.(14);
               send("system", "mouse_click", { button: "middle", count: 1 });
@@ -595,7 +596,7 @@ export default function TouchpadPanel({ serverState, send, vibrate, showToast })
           </button>
         </div>
 
-        {/* Always-handy Backspace & Enter quick triggers */}
+        {/* Backspace & Enter quick triggers */}
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
