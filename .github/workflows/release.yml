@@ -1,4 +1,4 @@
-name: Publicar Paquete Chrome Remote Control
+name: Build and Publish Chrome Remote Control Release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Etiqueta de versión a publicar (ej. v1.0.0)"
+        description: "Release tag to publish (e.g. v1.0.0)"
         required: false
         default: "v1.0.0"
 
@@ -25,13 +25,13 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Compilar interfaz móvil PWA
+      - name: Build mobile PWA frontend
         working-directory: frontend
         run: |
           npm ci
           npm run build
 
-      - name: Empaquetar distribución lista para usar
+      - name: Package ready-to-run distribution
         shell: pwsh
         run: |
           $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
@@ -52,7 +52,7 @@ jobs:
           "ZIP_NAME=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Append
           "REL_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Crear GitHub Release
+      - name: Publish GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

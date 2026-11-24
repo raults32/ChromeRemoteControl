@@ -1,91 +1,109 @@
-# Chrome Remote Control — Control Remoto Total desde el Celular
+# Chrome Remote Control
 
-Sistema híbrido de **baja latencia (`< 20ms` en Wi-Fi local)** para controlar **Google Chrome** y tu computadora desde cualquier teléfono **Android o iPhone** funcionando como una **PWA instalable** (sin tiendas de aplicaciones).
+> **Low-latency Wi-Fi remote control (`< 20 ms`) for Google Chrome and your PC from any Android or iPhone — powered by a FastAPI WebSocket server, a Manifest V3 Chrome Extension bridge, and a true-black AMOLED Progressive Web App (PWA) with instant QR pairing.**
 
 ---
 
-## Arquitectura de 3 Componentes
+## Overview
+
+**Chrome Remote Control** turns any smartphone on your local Wi-Fi network into a full-featured remote control for **Google Chrome** and essential desktop operations—with zero mobile app store downloads required.
+
+### Hybrid 3-Component Architecture
 
 ```text
-[ Celular (PWA AMOLED) ] <--- WebSocket / HTTP (Wi-Fi Local) ---> [ Servidor Local PC (FastAPI + Tray) ]
-                                                                           |             |
-                                                      (Control OS) <-------+             +------> [ Extensión Chrome (MV3) ]
-                                            (Mouse, Teclado, Audio, Pantalla, Energía)             (Pestañas, Media, Marcadores)
+[ Smartphone (AMOLED PWA) ] <--- WebSocket / HTTP (Local Wi-Fi) ---> [ Local PC Server (FastAPI + System Tray) ]
+                                                                                |                |
+                                                           (OS Control) <-------+                +------> [ Chrome Extension (MV3) ]
+                                                 (Mouse, Keyboard, Audio, Screen, Power)                  (Live Tabs, Media, Bookmarks)
 ```
 
-1. **Backend Local en PC (`backend/`):** Servidor **FastAPI + WebSockets**, control nativo de mouse/teclado Unicode (`SendInput` en Windows / `pynput` en macOS y Linux), volumen maestro (`pycaw` / `osascript` / `pactl`), portapapeles bidireccional, transmisión ligera de pantalla (`mss` + `Pillow`), temporizador de suspensión/apagado e icono en la bandeja del sistema (`pystray`).
-2. **Extensión de Google Chrome (`chrome-extension/`):** Extensión **Manifest V3** con documento `offscreen` para mantener el WebSocket local siempre activo, sincronización de pestañas/ventanas en tiempo real, marcadores, historial, descargas y control preciso de video HTML5 (YouTube, Netflix, Twitch, Disney+, Prime Video) incluso con Chrome en segundo plano.
-3. **Interfaz Móvil PWA (`frontend/`):** Aplicación táctil en **React + Vite + Tailwind CSS** con modo oscuro AMOLED (`#000000` / `#121212`), vibración háptica, *Wake Lock* (pantalla encendida) y emparejamiento instantáneo por código QR o PIN.
+1. **Local PC Server (`backend/`):** Built with **Python 3.11+ & FastAPI**, handling sub-millisecond cursor/keyboard input (`Win32 SendInput` on Windows + `pynput` on macOS/Linux), master system audio (`pycaw` / `osascript` / `pactl`), two-way clipboard sync, lightweight interactive screen preview (`mss` + `Pillow`), customizable macros, sleep timer, and a background system tray controller (`pystray`).
+2. **Google Chrome Extension (`chrome-extension/`):** **Manifest V3** extension using an `offscreen` WebSocket bridge for real-time tab & multi-window management, bookmarks, history, downloads, and precision HTML5 media control (YouTube, Netflix, Twitch, Disney+, Prime Video)—even when Chrome is minimized or unfocused.
+3. **Mobile AMOLED Interface (`frontend/`):** Touch-first **React + Vite + Tailwind CSS** Progressive Web App designed for one-handed ergonomics, `#000000` OLED dark surfaces, haptic feedback, Screen Wake Lock, and instant QR / PIN pairing.
 
 ---
 
-## Inicio Rápido
+## Quick Start
 
-### 1. Iniciar el Servidor en tu PC
+### 1. Start the Local Server on Your PC
 
-#### En Windows
-Haz doble clic en **`start.bat`** o ejecútalo desde PowerShell/CMD:
+#### Windows
+Double-click **`start.bat`** or run from PowerShell / Command Prompt:
 ```bat
 .\start.bat
 ```
 
-#### En macOS / Linux
+#### macOS / Linux
 ```bash
 chmod +x start.sh
 ./start.sh
 ```
 
-Al iniciar:
-- Se mostrará un **código QR** y el **PIN de 4 a 6 dígitos** en la consola.
-- Aparecerá un icono en la **Bandeja del Sistema (System Tray)** desde donde puedes ver el código QR en ventana emergente, cambiar el PIN, pausar el control remoto o activar *"Iniciar con el sistema"*.
+On launch:
+- A scannable **QR Code** and a **4–6 digit PIN** are printed in the console.
+- A **System Tray icon** starts in the background with quick actions to *View QR & PIN*, *Change PIN*, *Pause Remote Input*, *Launch on Startup*, or *Quit*.
 
-Opciones por línea de comandos (`backend/main.py`):
+Optional CLI flags:
 ```bash
 python backend/main.py --port 8765 --pin 2580
 ```
 
 ---
 
-### 2. Instalar la Extensión en Google Chrome (Opcional pero Recomendado)
+### 2. Load the Chrome Extension Bridge (Recommended)
 
-> **Resiliencia integrada:** Si aún no instalas la extensión, el servidor utiliza automáticamente atajos del sistema operativo para que la navegación y controles básicos sigan funcionando. Al cargar la extensión obtienes lista de pestañas en vivo, marcadores y barra de progreso exacta en videos.
+> **Built-in Resilience:** If the Chrome extension is not installed or Chrome is closed, the backend automatically falls back to native OS shortcuts so navigation, trackpad, keyboard, and basic playback keys continue working seamlessly.
 
-1. Abre Google Chrome en tu PC y entra en `chrome://extensions/`.
-2. Activa el interruptor **Modo de desarrollador** (arriba a la derecha).
-3. Haz clic en **Cargar descomprimida** (*Load unpacked*).
-4. Selecciona la carpeta **`chrome-extension`** dentro de este proyecto.
-5. Verás el indicador **`ON`** en el icono de la extensión en cuanto el servidor local esté encendido.
-
----
-
-### 3. Conectar tu Celular (Android / iOS)
-
-1. Asegúrate de que tu celular y tu PC estén conectados a la **misma red Wi-Fi**.
-2. **Opción A (QR Instantáneo):** Escanea con la cámara de tu celular el código QR de la consola o de la bandeja del sistema. Se autorizará automáticamente y guardará un token de sesión persistente.
-3. **Opción B (PIN Manual):** Abre en el navegador de tu celular `http://<IP_DE_TU_PC>:8765` e introduce el PIN numérico mostrado en la PC.
-4. **Instalar como App (PWA):**
-   - **Android (Chrome):** Menú `⋮` → *Instalar aplicación* / *Añadir a pantalla de inicio*.
-   - **iPhone (Safari):** Botón *Compartir* → *Agregar a inicio*.
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Enable **Developer mode** in the top-right corner.
+3. Click **Load unpacked** and select the **`chrome-extension`** folder inside this repository.
+4. The extension badge displays **`ON`** automatically once connected to `127.0.0.1:8765`.
 
 ---
 
-## Catálogo de Controles Incluidos
+### 3. Pair Your Phone & Install the PWA
 
-| Pestaña Móvil | Funcionalidades |
+1. Connect your phone to the **same Wi-Fi network** as your PC.
+2. **Instant QR Pairing:** Scan the QR code shown in the terminal or System Tray window with your phone camera.
+3. **Manual PIN Pairing:** Or visit `http://<YOUR_PC_LAN_IP>:8765` on your phone and enter the 4–6 digit PIN. A persistent session token is saved so you do not need to re-enter it every time.
+4. **Install to Home Screen (Optional):**
+   - **Android (Chrome):** Menu `⋮` → *Install app* / *Add to Home screen*.
+   - **iPhone (Safari):** *Share* → *Add to Home Screen*.
+
+---
+
+## Feature Matrix
+
+| Mobile Tab | Capabilities |
 | :--- | :--- |
-| **1. Chrome** | Omnibox inteligente con selector de motor (Google, YouTube, Wikipedia, ChatGPT, DuckDuckGo, GitHub), Atrás/Adelante/Recargar/Sin caché/Detener/Inicio, Nueva pestaña/Ventana/Incógnito, Zoom (`-`/`100%`/`+`), `F11`, buscar en página (`Ctrl+F`) y cajones rápidos de **Marcadores**, **Historial** y **Descargas**. |
-| **2. Media** | Play/Pausa, Anterior/Siguiente, saltos precisos (`-30s`, `-10s`, `-5s`, `+5s`, `+10s`, `+30s`), **barra de progreso interactiva (Scrubber)** en vivo, botón inteligente **Saltar Intro / Anuncio** (YouTube/Netflix), velocidad (`0.5x`–`2x`), subtítulos (`CC`), Pantalla Completa, Modo Teatro, **PiP**, y silencio independiente de video vs. PC. |
-| **3. Touchpad** | Touchpad de baja latencia (`1 dedo`: mover/clic, `doble toque + mover`: arrastrar, `2 dedos`: clic derecho / scroll vertical y horizontal / pellizcar zoom), botones físicos Izq/Central/Der, **Teclado en vivo** con soporte completo para español (`ñ`, acentos, símbolos y emojis), **Dictado por Voz**, teclas especiales (`Esc`, `Tab`, flechas, `Alt+Tab`, `Win/Cmd`), atajos rápidos y modo **Espiar PC** (vista en vivo interactiva con toque directo). |
-| **4. Pestañas** | Lista en tiempo real con favicon, título, dominio e indicador de audio; cambiar de pestaña con un toque, silenciar pestaña individual, fijar (Pin), duplicar, cerrar, reabrir última cerrada (`Ctrl+Shift+T`), cambiar entre ventanas y vista rápida de marcadores. |
-| **5. Sistema** | Volumen maestro (`0–100%` + Mute), **Portapapeles bidireccional** (*Enviar/Pegar en PC* y *Traer de PC*), **Macros y Escenas** personalizables (*Modo Cine*, *Modo Trabajo*, *Modo Noche* + creador propio), **Sleep Timer** (`15/30/60/90 min`), **Energía protegida con confirmación** (*Bloquear*, *Suspender*, *Reiniciar*, *Apagar*), sensibilidad, *Wake Lock* y respuesta háptica. |
+| **1. Chrome** | Smart Omnibox with search engine selector (Google, YouTube, Wikipedia, ChatGPT, DuckDuckGo, GitHub), Back / Forward / Reload / Hard Reload / Stop / Home, New Tab / Window / Incognito, Zoom (`-` / `100%` / `+`), `F11` Fullscreen, in-page search (`Ctrl+F`), and live **Bookmarks**, **History**, and **Downloads** drawers. |
+| **2. Media** | Play/Pause, Previous/Next track, precision jumps (`-30s`, `-10s`, `-5s`, `+5s`, `+10s`, `+30s`), real-time interactive **Timeline Scrubber**, smart **Skip Intro / Ad** detector (YouTube, Netflix, Prime Video), playback speed (`0.5x`–`2x`), Captions (`CC`), Fullscreen, Theater Mode, **Picture-in-Picture (PiP)**, and independent Video Mute vs. PC Master Volume. |
+| **3. Touchpad** | Low-latency multi-touch surface (`1 finger`: move/left-click, `double-tap + drag`: drag & drop, `2 fingers`: right-click / smooth vertical & horizontal scroll / pinch-to-zoom), Left / Middle / Right physical buttons, **Live Unicode Keyboard** (accents, symbols, emojis), **Voice Dictation** (`Web Speech API`), special keys (`Esc`, `Tab`, arrows, `Alt+Tab`, `Win/Cmd`), quick shortcuts, and interactive **Screen Spy** live preview with tap-to-click. |
+| **4. Tabs** | Real-time open tabs list with favicons, titles, domains, audio indicators, and multi-window filtering; 1-tap tab switching, per-tab mute, pin/unpin, duplicate, close, reopen last closed tab (`Ctrl+Shift+T`), and favorite bookmarks browser. |
+| **5. System** | Master PC volume (`0–100%` + Mute), **Two-Way Clipboard Sync** (*Send / Paste to PC* and *Fetch from PC*), customizable **Macros & Scenes** (*Cinema Mode*, *Work Mode*, *Night Mode* + custom builder), **Sleep Timer** (`15/30/60/90 min`), confirmation-protected **Power Controls** (*Lock*, *Sleep*, *Restart*, *Shut Down*), cursor sensitivity, *Wake Lock*, and haptic feedback. |
 
 ---
 
-## Solución de Problemas Frecuentes
+## Repository Structure
 
-- **El celular no carga la página al escanear el QR:**
-  Verifica que ambos equipos estén en la misma red Wi-Fi (no en una red de "Invitados" con aislamiento AP) y permite el acceso a Python en el **Firewall de Windows** para redes privadas (puerto TCP `8765`).
-- **Quiero ejecutar las pruebas automatizadas del backend:**
-  ```bash
-  backend/.venv/Scripts/pytest backend/tests
-  ```
+```text
+ChromeRemoteControl/
+├── backend/                # FastAPI WebSocket hub, PIN/QR auth, OS input, Screen Spy & System Tray
+├── chrome-extension/       # Manifest V3 extension bridge + HTML5/YouTube/Netflix media script
+├── frontend/               # React + Vite + Tailwind CSS mobile AMOLED PWA
+├── website/                # Official product showcase & download landing page
+├── start.bat               # One-click Windows setup & launcher
+└── start.sh                # One-click macOS / Linux setup & launcher
+```
+
+---
+
+## Automated Tests
+
+```bash
+backend/.venv/Scripts/pytest backend/tests -v
+```
+
+## License
+
+MIT
