@@ -445,6 +445,7 @@ function startTabScreenLoop() {
             payload: {
               format: "jpeg",
               data: base64Data,
+              dataUrl,
               ts: Date.now()
             }
           },
@@ -521,7 +522,7 @@ async function handleBrowserSystemFallback(action, payload = {}, peerId = null) 
   }
 
   if (act === "shortcut") {
-    const sc = String(payload.shortcut || "").toLowerCase();
+    const sc = String(payload.shortcut || payload.name || "").toLowerCase();
     if (sc === "alt_tab") {
       const tabs = await chrome.tabs.query({ currentWindow: true });
       if (tabs.length > 1) {

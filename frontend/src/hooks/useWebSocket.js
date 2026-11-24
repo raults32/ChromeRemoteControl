@@ -76,11 +76,12 @@ export function useRemoteSocket(sessionConfig, onUnauthorized, onSessionUpgraded
 
       if (action === "pc_agent_status") {
         const connected = Boolean(payload.pcAgentConnected);
-        setServerState((prev) => ({ ...prev, pcAgentConnected: connected }));
-        showToast(
-          connected ? "Full Windows PC Agent connected" : "Switched to Instant Browser Mode",
-          connected ? "success" : "info"
-        );
+        setServerState((prev) => {
+          if (prev.pcAgentConnected !== connected && connected) {
+            showToast("Full Windows PC Agent connected", "success");
+          }
+          return { ...prev, pcAgentConnected: connected };
+        });
         return;
       }
 

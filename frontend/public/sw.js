@@ -1,11 +1,7 @@
-const CACHE_NAME = "chrome-remote-shell-v2";
-const SHELL_ASSETS = ["./", "./manifest.json"];
+const CACHE_NAME = "chrome-remote-shell-v5";
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)).catch(() => undefined)
-  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -29,7 +25,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: "no-cache" })
       .then((res) => {
         if (res && res.status === 200 && res.type === "basic") {
           const copy = res.clone();
@@ -37,6 +33,6 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./")))
+      .catch(() => caches.match(event.request))
   );
 });

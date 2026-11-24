@@ -346,7 +346,7 @@
     }
 
     if (action === "shortcut") {
-      const sc = String(payload.shortcut || "").toLowerCase();
+      const sc = String(payload.shortcut || payload.name || "").toLowerCase();
       if (sc === "select_all") {
         const el = document.activeElement;
         if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {

@@ -3,6 +3,7 @@
 // 2) Optional Local PC Agent WebSocket bridge (127.0.0.1:8765) for OS-level mouse, audio & power.
 
 let extSocket = null;
+let wasExtSocketOpen = false;
 let localClientSocket = null;
 let currentPort = 8765;
 let reconnectTimer = null;
@@ -514,6 +515,7 @@ function connectWebSocket(port) {
   }
 
   extSocket.addEventListener("open", () => {
+    wasExtSocketOpen = true;
     reconnectDelay = 1500;
     pushBridgeStatus();
     if (authedPeers.size > 0) {
@@ -543,11 +545,13 @@ function connectWebSocket(port) {
   });
 
   extSocket.addEventListener("close", () => {
+    const previouslyOpen = wasExtSocketOpen;
+    wasExtSocketOpen = false;
     clearWsTimers();
     extSocket = null;
     closeLocalSystemProxy();
     pushBridgeStatus();
-    if (authedPeers.size > 0) {
+    if (previouslyOpen && authedPeers.size > 0) {
       broadcastToWebRtcPeers({
         target: "client",
         action: "pc_agent_status",

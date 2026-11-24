@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import React, { useCallback, useEffect, useState } from "react";
 import { Compass, PlayCircle, Touchpad, Layers, SlidersHorizontal, Puzzle, MonitorCheck, X } from "lucide-react";
 
 import AuthScreen from "./components/AuthScreen.jsx";
@@ -17,7 +16,6 @@ const SESSION_STORAGE_KEY = "crc_session_v2";
 const LEGACY_TOKEN_KEY = "crc_session_token";
 
 function loadInitialSession() {
-  // Check URL first for instant 1-scan WebRTC QR (?room=...&key=...)
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
     const room = params.get("room");
@@ -64,11 +62,11 @@ function loadInitialSession() {
 }
 
 const NAV_ITEMS = [
-  { id: "chrome", label: "Chrome", title: "Navigation & Omnibox", icon: Compass },
-  { id: "media", label: "Media", title: "Multimedia Control", icon: PlayCircle },
-  { id: "touchpad", label: "Touchpad", title: "Touchpad & Keyboard", icon: Touchpad },
-  { id: "tabs", label: "Tabs", title: "Open Tabs & Bookmarks", icon: Layers },
-  { id: "system", label: "System", title: "Audio, Macros & Power", icon: SlidersHorizontal }
+  { id: "chrome", label: "Chrome", icon: Compass },
+  { id: "media", label: "Media", icon: PlayCircle },
+  { id: "touchpad", label: "Touchpad", icon: Touchpad },
+  { id: "tabs", label: "Tabs", icon: Layers },
+  { id: "system", label: "System", icon: SlidersHorizontal }
 ];
 
 export default function App() {
@@ -76,13 +74,6 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [pairingBusy, setPairingBusy] = useState(false);
   const [activeNav, setActiveNav] = useState("chrome");
-  const [liveAnnouncement, setLiveAnnouncement] = useState("");
-
-  const viewHeadingRef = useRef(null);
-  const toastPopoverRef = useRef(null);
-  const toastFocusInsideRef = useRef(false);
-  const toastTimerRef = useRef(null);
-  const lastFocusBeforeToastRef = useRef(null);
 
   const { hapticsEnabled, toggleHaptics, vibrate } = useHaptics();
   const { wakeLockSupported, wakeLockEnabled, toggleWakeLock } = useWakeLock();
@@ -103,7 +94,6 @@ export default function App() {
     setSessionConfig(nextSession);
   }, []);
 
-  // Automatic Local Server QR Pairing via /?pair=<secret>
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pairSecret = params.get("pair");
@@ -133,103 +123,18 @@ export default function App() {
   const { connectionState, latencyMs, serverState, toast, showToast, clearToast, send } =
     useRemoteSocket(sessionConfig, handleLogout, handleAuthenticated);
 
-  useEffect(() => {
-    const currentItem = NAV_ITEMS.find((i) => i.id === activeNav) || NAV_ITEMS[0];
-    const tabSuffix = activeNav === "tabs" ? ` (${serverState.tabs.length})` : "";
-    document.title = `${currentItem.label}${tabSuffix} | Chrome Remote Control`;
-  }, [activeNav, serverState.tabs.length]);
-
-  const dismissToast = useCallback(
-    (restoreFocus = false) => {
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = null;
-      }
-      const pop = toastPopoverRef.current;
-      if (pop && typeof pop.hidePopover === "function") {
-        try {
-          pop.hidePopover();
-        } catch (_e) {
-          // Ignore
-        }
-      }
-      clearToast();
-      if (restoreFocus && lastFocusBeforeToastRef.current?.focus) {
-        lastFocusBeforeToastRef.current.focus();
-      }
-    },
-    [clearToast]
-  );
-
+  // Auto-dismiss transient toast notifications reliably after 2.5 seconds
   useEffect(() => {
     if (!toast) return undefined;
-
-    if (document.querySelector("dialog:modal")) {
-      return undefined;
-    }
-
-    lastFocusBeforeToastRef.current = document.activeElement;
-    const pop = toastPopoverRef.current;
-    if (pop && typeof pop.showPopover === "function") {
-      try {
-        pop.showPopover();
-      } catch (_e) {
-        // Ignore
-      }
-    }
-
-    if (typeof document.ariaNotify === "function") {
-      document.ariaNotify(toast.message);
-    } else {
-      setLiveAnnouncement((prev) => (prev === toast.message ? `${toast.message}\u00A0` : toast.message));
-    }
-
-    const scheduleAutoDismiss = () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => {
-        if (!toastFocusInsideRef.current) {
-          dismissToast(false);
-        }
-      }, 3000);
-    };
-
-    scheduleAutoDismiss();
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, [toast, dismissToast]);
-
-  const switchView = (nextId, viaKeyboard = false) => {
-    if (nextId === activeNav) return;
-    vibrate(10);
-
-    const allowMotion = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    const routeFocusIfNeeded = () => {
-      if (viaKeyboard) {
-        viewHeadingRef.current?.focus();
-      }
-    };
-
-    if (!allowMotion || typeof document.startViewTransition !== "function") {
-      setActiveNav(nextId);
-      requestAnimationFrame(routeFocusIfNeeded);
-      return;
-    }
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        setActiveNav(nextId);
-      });
-    });
-    transition.finished.finally(routeFocusIfNeeded);
-  };
+    const t = setTimeout(clearToast, 2500);
+    return () => clearTimeout(t);
+  }, [toast, clearToast]);
 
   if (pairingBusy) {
     return (
-      <main className="min-h-dvh bg-black text-zinc-200 grid place-content-center px-4">
-        <progress aria-label="Pairing device via QR code" className="w-48 mb-2 mx-auto" />
-        <p className="text-sm text-center">Pairing device via QR code...</p>
-      </main>
+      <div className="min-h-dvh bg-black text-zinc-200 flex items-center justify-center text-sm px-4 text-center">
+        Pairing device via QR code...
+      </div>
     );
   }
 
@@ -237,7 +142,6 @@ export default function App() {
     return <AuthScreen onAuthenticated={handleAuthenticated} initialError={authError} vibrate={vibrate} />;
   }
 
-  const currentViewMeta = NAV_ITEMS.find((i) => i.id === activeNav) || NAV_ITEMS[0];
   const isWebRtc = sessionConfig.mode === "webrtc";
   const badgeActive = isWebRtc ? true : serverState.extensionConnected;
   const badgeText = isWebRtc
@@ -250,45 +154,6 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-black text-zinc-100 flex flex-col">
-      <p className="visually-hidden">Remote control status announcements</p>
-      <div aria-live="polite" aria-atomic="true" className="visually-hidden">
-        {liveAnnouncement}
-      </div>
-
-      {/* Persistent Top-Layer Toast Region */}
-      <div role="region" aria-label="Notifications">
-        <div
-          id="remote-toast"
-          ref={toastPopoverRef}
-          popover="manual"
-          className="toast-popover"
-          onFocus={() => {
-            toastFocusInsideRef.current = true;
-            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-          }}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget)) {
-              toastFocusInsideRef.current = false;
-              toastTimerRef.current = setTimeout(() => dismissToast(false), 1800);
-            }
-          }}
-        >
-          <span className="text-xs font-medium text-zinc-100 flex-1">
-            {toast?.message || ""}
-          </span>
-          <button
-            type="button"
-            popovertarget="remote-toast"
-            popovertargetaction="hide"
-            aria-label="Dismiss notification"
-            onClick={() => dismissToast(true)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 shrink-0"
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-
       {/* Top Status & Telemetry Header */}
       <header className="safe-top-bar sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-zinc-900 pb-2.5">
         <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
@@ -334,17 +199,28 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Content Landmark */}
-      <main className="flex-1 w-full max-w-lg mx-auto px-3.5 pt-3 pb-24">
-        <h1
-          id="view-heading"
-          ref={viewHeadingRef}
-          tabIndex={-1}
-          className="visually-hidden"
+      {/* Clean, Auto-Dismissing Floating Toast Banner */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          onClick={clearToast}
+          className="fixed top-14 left-1/2 -translate-x-1/2 z-50 max-w-xs w-[90%] bg-zinc-900/95 border border-cyan-500/40 text-zinc-100 text-xs font-medium px-3.5 py-2.5 rounded-2xl shadow-xl flex items-center justify-between gap-2"
         >
-          {currentViewMeta.title}
-        </h1>
+          <span className="flex-1 text-center">{toast.message}</span>
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={clearToast}
+            className="text-zinc-400 hover:text-zinc-100 shrink-0 p-0.5"
+          >
+            <X className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
+      {/* Main Content Area */}
+      <main className="flex-1 w-full max-w-lg mx-auto px-3.5 pt-3.5 pb-24">
         {activeNav === "chrome" && <ChromePanel serverState={serverState} send={send} vibrate={vibrate} />}
         {activeNav === "media" && <MediaPanel serverState={serverState} send={send} vibrate={vibrate} />}
         {activeNav === "touchpad" && (
@@ -368,7 +244,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Ergonomic 5-Item Bottom Navigation Landmark */}
+      {/* Ergonomic 5-Tab Bottom Navigation Bar */}
       <nav aria-label="Primary" className="safe-bottom-bar bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-900">
         <div className="max-w-lg mx-auto grid grid-cols-5 gap-1 pt-1.5">
           {NAV_ITEMS.map((item) => {
@@ -379,8 +255,11 @@ export default function App() {
                 key={item.id}
                 type="button"
                 aria-current={active ? "page" : undefined}
-                onClick={(e) => switchView(item.id, e.detail === 0)}
-                className={`nav-tab-btn flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl transition-colors ${
+                onClick={() => {
+                  vibrate(10);
+                  setActiveNav(item.id);
+                }}
+                className={`flex flex-col items-center justify-center gap-1 py-1.5 rounded-2xl transition-colors ${
                   active ? "text-cyan-400 bg-cyan-500/10" : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import QRCode from "qrcode";
 import {
   Volume2,
@@ -63,19 +63,32 @@ function formatCountdown(seconds) {
   return `${m}m ${String(rem).padStart(2, "0")}s`;
 }
 
-function legacyCopy(text) {
-  const previousFocus = document.activeElement;
-  const field = Object.assign(document.createElement("textarea"), { value: text });
-  field.setAttribute("readonly", "");
-  field.style.cssText = "position:fixed;inset-block-start:0;opacity:0";
-  document.body.append(field);
-  field.select();
-  try {
-    return document.execCommand("copy");
-  } finally {
-    field.remove();
-    previousFocus?.focus({ preventScroll: true });
-  }
+function ToggleRow({ icon: Icon, iconClass = "", label, checked, onChange }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      <span className="flex items-center gap-2 text-xs text-zinc-200">
+        {Icon && <Icon className={`w-4 h-4 shrink-0 ${iconClass}`} aria-hidden="true" />}
+        <span>{label}</span>
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={Boolean(checked)}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors ${
+          checked ? "bg-cyan-500 border-cyan-400" : "bg-zinc-800 border-zinc-700"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </div>
+  );
 }
 
 export default function SystemPanel({
@@ -96,11 +109,7 @@ export default function SystemPanel({
   const [mobileClipInput, setMobileClipInput] = useState("");
   const [sleepMode, setSleepMode] = useState("suspend");
   const [pendingPower, setPendingPower] = useState(null);
-
-  const [copyStatus, setCopyStatus] = useState(null);
-  const [copyTipText, setCopyTipText] = useState("");
-  const lastCopyMsgRef = useRef("");
-  const copyTimerRef = useRef(null);
+  const [copiedLocal, setCopiedLocal] = useState(false);
 
   const [macroName, setMacroName] = useState("");
   const [macroUrls, setMacroUrls] = useState("");
@@ -112,29 +121,6 @@ export default function SystemPanel({
   const powerDialogRef = useRef(null);
   const macroDialogRef = useRef(null);
   const qrDialogRef = useRef(null);
-
-  useEffect(() => {
-    const dlg = qrDialogRef.current;
-    if (!dlg || "closedBy" in HTMLDialogElement.prototype) return undefined;
-
-    let pressedOutside = false;
-    const isOutside = (e) => {
-      const r = dlg.getBoundingClientRect();
-      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
-    };
-    const onDown = (e) => {
-      pressedOutside = isOutside(e);
-    };
-    const onUp = (e) => {
-      if (pressedOutside && isOutside(e)) dlg.close();
-    };
-    dlg.addEventListener("pointerdown", onDown);
-    dlg.addEventListener("pointerup", onUp);
-    return () => {
-      dlg.removeEventListener("pointerdown", onDown);
-      dlg.removeEventListener("pointerup", onUp);
-    };
-  }, []);
 
   const openPowerConfirm = (actionItem) => {
     vibrate?.(16);
@@ -214,8 +200,7 @@ export default function SystemPanel({
         setPairingInfo({
           mode: "webrtc",
           qrDataUrl,
-          roomFormatted: r.length === 8 ? `${r.slice(0, 4)}-${r.slice(4)}` : r,
-          shareUrl
+          roomFormatted: r.length === 8 ? `${r.slice(0, 4)}-${r.slice(4)}` : r
         });
         const dlg = qrDialogRef.current;
         if (dlg && !dlg.open) {
@@ -253,7 +238,7 @@ export default function SystemPanel({
         textToSend = await navigator.clipboard.readText();
         setMobileClipInput(textToSend);
       } catch (_err) {
-        // Requires manual paste into textarea on non-HTTPS LAN origins
+        // Requires manual paste on non-HTTPS origins
       }
     }
     if (!textToSend) {
@@ -266,42 +251,26 @@ export default function SystemPanel({
   const copyPcClipboardLocally = async () => {
     if (!clipboardText) return;
     vibrate?.(12);
-    let ok = false;
     try {
       await navigator.clipboard.writeText(clipboardText);
-      ok = true;
+      setCopiedLocal(true);
+      setTimeout(() => setCopiedLocal(false), 1800);
+      showToast?.("Copied to phone clipboard", "success");
     } catch (_err) {
-      ok = legacyCopy(clipboardText);
+      showToast?.("Select the text directly to copy", "info");
     }
-
-    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    let msg = ok ? "Copied" : "Copy failed";
-    if (msg === lastCopyMsgRef.current) {
-      msg += "\u00A0";
-    }
-    lastCopyMsgRef.current = msg;
-
-    setCopyStatus(ok ? "ok" : "fail");
-    setCopyTipText("");
-    requestAnimationFrame(() => setCopyTipText(msg));
-
-    copyTimerRef.current = setTimeout(() => {
-      setCopyStatus(null);
-      setCopyTipText("");
-    }, 2000);
   };
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Master PC Audio */}
-      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
+      {/* Master System Audio */}
+      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
             System Master Audio
           </h2>
           <button
             type="button"
-            aria-pressed={Boolean(audio.muted)}
             onClick={() => {
               vibrate?.(14);
               send("system", "audio_toggle_mute", {});
@@ -313,19 +282,16 @@ export default function SystemPanel({
             }`}
           >
             {audio.muted ? <VolumeX className="w-4 h-4" aria-hidden="true" /> : <Volume2 className="w-4 h-4 text-cyan-400" aria-hidden="true" />}
-            <span>Mute PC</span>
+            <span>{audio.muted ? "Muted" : "Mute"}</span>
           </button>
         </div>
 
         <div className="flex items-center gap-3">
-          <label htmlFor="sys-master-volume" className="visually-hidden">
-            System master volume
-          </label>
           <input
-            id="sys-master-volume"
             type="range"
             min={0}
             max={100}
+            aria-label="System master volume"
             value={audio.volume ?? 50}
             onChange={(e) => send("system", "audio_set_volume", { volume: Number(e.target.value) })}
             className="flex-1 cursor-pointer"
@@ -335,21 +301,17 @@ export default function SystemPanel({
       </section>
 
       {/* Two-Way Clipboard */}
-      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Two-Way Clipboard
         </h2>
-        <label htmlFor="mobile-clip-textarea" className="block text-xs text-zinc-300 font-medium">
-          Text or URL to send to your PC
-        </label>
         <textarea
-          id="mobile-clip-textarea"
-          name="clipboardText"
           rows={2}
           value={mobileClipInput}
           onChange={(e) => setMobileClipInput(e.target.value)}
-          placeholder="Paste a link or snippet from your phone..."
-          className="w-full bg-black border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 placeholder:text-zinc-500"
+          aria-label="Text or URL to send to your PC"
+          placeholder="Paste a link or snippet from your phone to send to your PC..."
+          className="w-full bg-black border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400"
         />
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -384,32 +346,26 @@ export default function SystemPanel({
           {clipboardText && (
             <div className="bg-black border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between gap-2">
               <code className="text-xs text-zinc-300 line-clamp-2 flex-1">{clipboardText}</code>
-              <span className="copy-wrap shrink-0">
-                <button
-                  type="button"
-                  {...(copyStatus === "ok" ? { "data-copied": "" } : copyStatus === "fail" ? { "data-failed": "" } : {})}
-                  onClick={copyPcClipboardLocally}
-                  className="bg-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-cyan-300 inline-flex items-center gap-1"
-                >
-                  {copyStatus === "ok" ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                  ) : (
-                    <ClipboardCopy className="w-3.5 h-3.5" aria-hidden="true" />
-                  )}
-                  <span>Copy</span>
-                </button>
-                <span className="tip" role="status">
-                  {copyTipText}
-                </span>
-              </span>
+              <button
+                type="button"
+                onClick={copyPcClipboardLocally}
+                className="bg-zinc-800 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-cyan-300 inline-flex items-center gap-1 shrink-0"
+              >
+                {copiedLocal ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                ) : (
+                  <ClipboardCopy className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+                <span>{copiedLocal ? "Copied" : "Copy"}</span>
+              </button>
             </div>
           )}
         </div>
       </section>
 
       {/* Customizable Macros & Scenes */}
-      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
+      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
             Macros & Scenes
@@ -424,11 +380,11 @@ export default function SystemPanel({
           </button>
         </div>
 
-        <ul role="list" className="space-y-2 list-none m-0 p-0">
+        <div className="space-y-2">
           {(macros || []).map((macro) => (
-            <li
+            <div
               key={macro.id}
-              className="bg-black border border-zinc-800 rounded-2xl p-3 flex items-center justify-between gap-2"
+              className="w-full bg-black border border-zinc-800 rounded-2xl p-3 flex items-center justify-between gap-2"
             >
               <button
                 type="button"
@@ -450,32 +406,29 @@ export default function SystemPanel({
                   vibrate?.(12);
                   send("system", "macro_delete", { id: macro.id });
                 }}
-                className="p-2 rounded-xl text-zinc-500 hover:text-rose-400"
+                className="p-2 rounded-xl text-zinc-500 hover:text-rose-400 shrink-0"
               >
                 <Trash2 className="w-4 h-4" aria-hidden="true" />
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
       {/* Sleep Timer & Protected Power Controls */}
-      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
             <Timer className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
             Sleep Timer
           </h2>
-          <label htmlFor="sleep-mode-select" className="visually-hidden">
-            Action when timer finishes
-          </label>
           <select
-            id="sleep-mode-select"
+            aria-label="Action when timer finishes"
             value={sleepMode}
             onChange={(e) => setSleepMode(e.target.value)}
-            className="bg-black border border-zinc-800 rounded-xl px-2.5 py-1 text-xs text-zinc-200"
+            className="bg-black border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200"
           >
-            <option value="suspend">Sleep PC</option>
+            <option value="suspend">Sleep PC / Pause</option>
             <option value="shutdown">Shut Down PC</option>
             <option value="lock">Lock PC</option>
           </select>
@@ -485,9 +438,16 @@ export default function SystemPanel({
           <div className="bg-amber-500/10 border border-amber-500/40 rounded-2xl p-3 flex items-center justify-between gap-2">
             <div>
               <p className="text-xs font-bold text-amber-300">
-                {sleepTimer.mode === "shutdown" ? "Shutting down" : sleepTimer.mode === "lock" ? "Locking" : "Sleeping"} in {formatCountdown(sleepTimer.remainingSeconds)}
+                {sleepTimer.mode === "shutdown"
+                  ? "Shutting down"
+                  : sleepTimer.mode === "lock"
+                    ? "Locking"
+                    : sleepTimer.mode === "pause_media"
+                      ? "Pausing media"
+                      : "Sleeping"}{" "}
+                in {formatCountdown(sleepTimer.remainingSeconds)}
               </p>
-              <p className="text-[11px] text-zinc-400">Running in the background on your PC</p>
+              <p className="text-[11px] text-zinc-400">Running automatically in the background</p>
             </div>
             <button
               type="button"
@@ -495,7 +455,7 @@ export default function SystemPanel({
                 vibrate?.(12);
                 send("system", "sleep_timer_cancel", {});
               }}
-              className="bg-black border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-semibold text-amber-300"
+              className="bg-black border border-amber-500/40 rounded-xl px-3 py-1.5 text-xs font-semibold text-amber-300 shrink-0"
             >
               Cancel
             </button>
@@ -539,8 +499,8 @@ export default function SystemPanel({
         </div>
       </section>
 
-      {/* Touchpad & Mobile App Preferences with Native HTML Switch Controls */}
-      <section className="squircle-card bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+      {/* Touchpad & Mobile App Preferences */}
+      <section className="bg-[#121212] border border-zinc-800/80 rounded-2xl p-4 space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
           <Sliders className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
           Sensitivity & Mobile Preferences
@@ -558,51 +518,40 @@ export default function SystemPanel({
             max={4.0}
             step={0.1}
             value={mouse.sensitivity || 1.6}
-            onChange={(e) => send("system", "mouse_settings", { sensitivity: Number(e.target.value) })}
-            className="w-full"
+            onChange={(e) => send("system", "mouse_update_settings", { sensitivity: Number(e.target.value) })}
+            className="w-full cursor-pointer"
           />
         </div>
 
-        <label htmlFor="sw-invert-scroll" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
-          <span>Invert scroll direction (Natural)</span>
-          <input
-            id="sw-invert-scroll"
-            type="checkbox"
-            {...({ switch: "" })}
-            checked={Boolean(mouse.invert_scroll)}
-            onChange={(e) => send("system", "mouse_settings", { invert_scroll: e.target.checked })}
-          />
-        </label>
+        <ToggleRow
+          label="Invert scroll direction (Natural)"
+          checked={Boolean(mouse.invert_scroll)}
+          onChange={(val) => {
+            vibrate?.(8);
+            send("system", "mouse_update_settings", { invert_scroll: val });
+          }}
+        />
 
         {wakeLockSupported && (
-          <label htmlFor="sw-wakelock" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
-            <span className="flex items-center gap-2">
-              <Sun className="w-4 h-4 text-amber-400" aria-hidden="true" />
-              Keep phone screen awake (Wake Lock)
-            </span>
-            <input
-              id="sw-wakelock"
-              type="checkbox"
-              {...({ switch: "" })}
-              checked={wakeLockEnabled}
-              onChange={(e) => toggleWakeLock(e.target.checked)}
-            />
-          </label>
+          <ToggleRow
+            icon={Sun}
+            iconClass="text-amber-400"
+            label="Keep phone screen awake (Wake Lock)"
+            checked={wakeLockEnabled}
+            onChange={(val) => {
+              vibrate?.(8);
+              toggleWakeLock(val);
+            }}
+          />
         )}
 
-        <label htmlFor="sw-haptics" className="flex items-center justify-between text-xs text-zinc-200 cursor-pointer py-1">
-          <span className="flex items-center gap-2">
-            <Vibrate className="w-4 h-4 text-cyan-400" aria-hidden="true" />
-            Haptic vibration on button press
-          </span>
-          <input
-            id="sw-haptics"
-            type="checkbox"
-            {...({ switch: "" })}
-            checked={hapticsEnabled}
-            onChange={(e) => toggleHaptics(e.target.checked)}
-          />
-        </label>
+        <ToggleRow
+          icon={Vibrate}
+          iconClass="text-cyan-400"
+          label="Haptic vibration on button press"
+          checked={hapticsEnabled}
+          onChange={(val) => toggleHaptics(val)}
+        />
 
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/80">
           <button
@@ -624,15 +573,15 @@ export default function SystemPanel({
         </div>
       </section>
 
-      {/* Native Confirmation Modal Dialog for Destructive Power Actions */}
+      {/* Native Confirmation Modal Dialog for Power Actions */}
       <dialog
         ref={powerDialogRef}
         aria-labelledby="power-dialog-title"
         onClose={handlePowerDialogClose}
       >
-        <h1 id="power-dialog-title" className="text-base font-bold text-zinc-100 mb-1.5">
+        <h3 id="power-dialog-title" className="text-base font-bold text-zinc-100 mb-1.5">
           {pendingPower?.title || "Confirm power action?"}
-        </h1>
+        </h3>
         <p className="text-xs text-zinc-400 mb-5">
           {pendingPower?.desc}
         </p>
@@ -655,17 +604,16 @@ export default function SystemPanel({
 
       {/* Native Modal Dialog for Creating Custom Macros */}
       <dialog ref={macroDialogRef} aria-labelledby="macro-dialog-title">
-        <h1 id="macro-dialog-title" className="text-base font-bold text-zinc-100 mb-3">
+        <h3 id="macro-dialog-title" className="text-base font-bold text-zinc-100 mb-3">
           New Custom Macro
-        </h1>
-        <form method="post" action="/macro" onSubmit={handleSaveMacro} className="space-y-3">
+        </h3>
+        <form onSubmit={handleSaveMacro} className="space-y-3">
           <div>
             <label htmlFor="macro-name" className="block text-xs text-zinc-300 mb-1">
-              Scene name <span aria-hidden="true">*</span>
+              Scene name
             </label>
             <input
               id="macro-name"
-              name="macroName"
               type="text"
               required
               value={macroName}
@@ -680,7 +628,6 @@ export default function SystemPanel({
             </label>
             <textarea
               id="macro-urls"
-              name="macroUrls"
               rows={2}
               value={macroUrls}
               onChange={(e) => setMacroUrls(e.target.value)}
@@ -693,30 +640,22 @@ export default function SystemPanel({
           </div>
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="macro-vol" className="text-xs text-zinc-300">
-              PC Volume (0 to 100%)
+              Volume (0 to 100%)
             </label>
             <input
               id="macro-vol"
-              name="macroVol"
               type="text"
               inputMode="numeric"
-              pattern="[0-9]{1,3}"
               value={macroVolume}
               onChange={(e) => setMacroVolume(e.target.value.replace(/\D/g, "").slice(0, 3))}
               className="w-20 bg-black border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-center font-mono text-zinc-100"
             />
           </div>
-          <label htmlFor="macro-fs" className="flex items-center justify-between gap-2 text-xs text-zinc-300 cursor-pointer">
-            <span>Toggle browser fullscreen (F11)</span>
-            <input
-              id="macro-fs"
-              name="macroFullscreen"
-              type="checkbox"
-              {...({ switch: "" })}
-              checked={macroFullscreen}
-              onChange={(e) => setMacroFullscreen(e.target.checked)}
-            />
-          </label>
+          <ToggleRow
+            label="Toggle browser fullscreen (F11)"
+            checked={macroFullscreen}
+            onChange={(val) => setMacroFullscreen(val)}
+          />
           <div className="grid grid-cols-2 gap-2 pt-2">
             <button
               type="button"
@@ -735,15 +674,11 @@ export default function SystemPanel({
         </form>
       </dialog>
 
-      {/* Light-Dismissible Informational QR Modal Dialog (closedby="any") */}
-      <dialog
-        ref={qrDialogRef}
-        {...({ closedby: "any" })}
-        aria-labelledby="qr-dialog-title"
-      >
-        <h1 id="qr-dialog-title" className="text-base font-bold text-zinc-100 text-center mb-1">
+      {/* Informational QR Modal Dialog */}
+      <dialog ref={qrDialogRef} aria-labelledby="qr-dialog-title">
+        <h3 id="qr-dialog-title" className="text-base font-bold text-zinc-100 text-center mb-2">
           Pair Another Phone
-        </h1>
+        </h3>
         {pairingInfo && (
           <div className="space-y-3 text-center">
             {pairingInfo.mode === "webrtc" ? (

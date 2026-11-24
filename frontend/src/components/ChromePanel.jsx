@@ -158,17 +158,29 @@ export default function ChromePanel({ serverState, send, vibrate }) {
               })}
             </div>
 
-            <label htmlFor="omnibox-newtab" className="flex items-center justify-between gap-2 text-xs text-zinc-300 cursor-pointer pt-0.5">
-              <span>Open in a new tab</span>
-              <input
-                id="omnibox-newtab"
-                name="newTab"
-                type="checkbox"
-                {...({ switch: "" })}
-                checked={openInNewTab}
-                onChange={(e) => setOpenInNewTab(e.target.checked)}
-              />
-            </label>
+            <div className="flex items-center justify-between gap-2 pt-0.5">
+              <span className="text-xs text-zinc-300">Open in a new tab</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={openInNewTab}
+                aria-label="Open in a new tab"
+                onClick={() => {
+                  vibrate?.(8);
+                  setOpenInNewTab((v) => !v);
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors ${
+                  openInNewTab ? "bg-cyan-500 border-cyan-400" : "bg-zinc-800 border-zinc-700"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                    openInNewTab ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           </form>
         </search>
       </section>
@@ -412,23 +424,22 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             ) : serverState.bookmarks.length === 0 ? (
               <p className="text-xs text-zinc-500 text-center py-3">No saved bookmarks found.</p>
             ) : (
-              <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+              <div className="space-y-1.5">
                 {serverState.bookmarks.map((bm) => (
-                  <li key={bm.id}>
-                    <button
-                      type="button"
-                      onClick={() => fireChrome("omnibox", { url: bm.url, newTab: true })}
-                      className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-zinc-100 truncate">{bm.title}</p>
-                        <p className="text-[11px] text-zinc-500 truncate">{bm.domain}</p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
-                    </button>
-                  </li>
+                  <button
+                    key={bm.id}
+                    type="button"
+                    onClick={() => fireChrome("omnibox", { url: bm.url, newTab: true })}
+                    className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-zinc-100 truncate">{bm.title}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{bm.domain}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
+                  </button>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
@@ -444,23 +455,22 @@ export default function ChromePanel({ serverState, send, vibrate }) {
                 Open chrome://history on PC
               </button>
             </div>
-            <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+            <div className="space-y-1.5">
               {serverState.history.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => fireChrome("omnibox", { url: item.url, newTab: true })}
-                    className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-zinc-100 truncate">{item.title}</p>
-                      <p className="text-[11px] text-zinc-500 truncate">{item.domain}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
-                  </button>
-                </li>
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => fireChrome("omnibox", { url: item.url, newTab: true })}
+                  className="w-full bg-black hover:bg-zinc-900 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-zinc-100 truncate">{item.title}</p>
+                    <p className="text-[11px] text-zinc-500 truncate">{item.domain}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" aria-hidden="true" />
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
@@ -478,19 +488,19 @@ export default function ChromePanel({ serverState, send, vibrate }) {
             {serverState.downloads.length === 0 ? (
               <p className="text-xs text-zinc-500 text-center py-3">No recent downloads.</p>
             ) : (
-              <ul role="list" className="space-y-1.5 list-none m-0 p-0">
+              <div className="space-y-1.5">
                 {serverState.downloads.map((dl) => (
-                  <li
+                  <div
                     key={dl.id}
-                    className="bg-black border border-zinc-800/80 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2"
+                    className="w-full bg-black border border-zinc-800/80 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2"
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-zinc-100 truncate">{dl.filename}</p>
                       <p className="text-[11px] text-zinc-500">{dl.state}</p>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
