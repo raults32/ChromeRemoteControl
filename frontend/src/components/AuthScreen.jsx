@@ -335,6 +335,14 @@ export default function AuthScreen({ onAuthenticated, initialError = "", vibrate
           </span>
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
         </button>
+
+        {detectHostedWebMode() && (
+          <p className="text-center mt-3.5">
+            <a href="../" className="text-xs text-zinc-400 hover:text-cyan-300 underline underline-offset-4">
+              ← On a PC? Go to the Desktop Download Page
+            </a>
+          </p>
+        )}
       </form>
     </main>
   );
