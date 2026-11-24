@@ -1,0 +1,65 @@
+name: Publicar Paquete Chrome Remote Control
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Etiqueta de versión a publicar (ej. v1.0.0)"
+        required: false
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Compilar interfaz móvil PWA
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Empaquetar distribución lista para usar
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
+          if (-not $tag) { $tag = "v1.0.0" }
+          New-Item -ItemType Directory -Force -Path "release_stage/ChromeRemoteControl/backend" | Out-Null
+          New-Item -ItemType Directory -Force -Path "release_stage/ChromeRemoteControl/frontend" | Out-Null
+
+          Copy-Item "backend/*.py" "release_stage/ChromeRemoteControl/backend/" -Force
+          Copy-Item "backend/requirements.txt" "release_stage/ChromeRemoteControl/backend/" -Force
+          Copy-Item "chrome-extension" "release_stage/ChromeRemoteControl/chrome-extension" -Recurse -Force
+          Copy-Item "frontend/dist" "release_stage/ChromeRemoteControl/frontend/dist" -Recurse -Force
+          Copy-Item "start.bat" "release_stage/ChromeRemoteControl/" -Force
+          Copy-Item "start.sh" "release_stage/ChromeRemoteControl/" -Force
+          Copy-Item "README.md" "release_stage/ChromeRemoteControl/" -Force
+
+          $zipName = "ChromeRemoteControl-Windows-$tag.zip"
+          Compress-Archive -Path "release_stage/ChromeRemoteControl/*" -DestinationPath $zipName -Force
+          "ZIP_NAME=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "REL_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Crear GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:REL_TAG >$null 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:REL_TAG $env:ZIP_NAME --clobber
+          } else {
+            gh release create $env:REL_TAG $env:ZIP_NAME --title "Chrome Remote Control $env:REL_TAG" --generate-notes --latest
+          }

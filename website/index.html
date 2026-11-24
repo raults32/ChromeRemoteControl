@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Descarga Chrome Remote Control v1.0 para Windows, macOS y Linux. Controla Google Chrome, pestañas en vivo, YouTube/Netflix, touchpad <20ms, teclado con voz y vista previa de pantalla desde tu celular por QR." />
+  <meta name="theme-color" content="#080b12" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Chrome Remote Control v1.0 — Tu navegador y tu PC en la palma de tu mano" />
+  <meta property="og:description" content="Gestor de pestañas en vivo, scrubber exacto para YouTube y Netflix, touchpad <20ms, modo Espiar Pantalla y PWA AMOLED por código QR sin tiendas." />
+  <meta property="og:image" content="icon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <title>Chrome Remote Control v1.0 — Control total de Google Chrome y tu PC desde el celular</title>
+  <link rel="preload" href="plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="icon" href="icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Chrome Remote Control",
+    "operatingSystem": "Windows 10, Windows 11, macOS, Linux",
+    "applicationCategory": "UtilitiesApplication",
+    "softwareVersion": "1.0.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script defer src="site.js"></script>
+</head>
+<body>
+  <!-- Decorative scroll-driven reading progress bar (empty element per scroll-progress-indicator guide) -->
+  <div id="scroll-progress" class="scroll-progress"></div>
+
+  <!-- Dynamic Ambient OKLab Page Aura reacting to the live demo stage -->
+  <div id="page-aura" class="page-aura" aria-hidden="true"></div>
+
+  <!-- State-aware sticky header + measured responsive navbar -->
+  <header class="site-header sticky-header-container">
+    <div class="nav-surface">
+      <div class="shell header-inner">
+        <a class="brand" href="#hero-section" aria-current="page" aria-label="Chrome Remote Control, inicio">
+          <img src="icon.png" fetchpriority="high" decoding="async" width="34" height="34" alt="" />
+          <span>Chrome Remote</span>
+          <small class="ver-pill">v1.0</small>
+        </a>
+
+        <nav class="site-nav" aria-label="Principal">
+          <button
+            class="menu-button"
+            type="button"
+            popovertarget="site-menu"
+            popovertargetaction="toggle"
+            aria-controls="site-menu"
+          >
+            <span class="menu-bars" aria-hidden="true"></span>
+            <span data-i18n="nav_menu">Menú</span>
+          </button>
+
+          <ul id="site-menu" class="site-menu" popover="auto">
+            <li><a href="#funciones" data-i18n="nav_features">Funciones</a></li>
+            <li><a href="#setup" data-i18n="nav_setups">Tu Setup</a></li>
+            <li><a href="#arquitectura" data-i18n="nav_arch">Modos</a></li>
+            <li><a href="#instalacion" data-i18n="nav_install">Instalación</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="https://github.com/raults32/ChromeRemoteControl" target="_blank" rel="noopener">GitHub</a></li>
+          </ul>
+
+          <button id="lang-switch" class="lang-btn" type="button" aria-label="Cambiar idioma entre Español e Inglés">ES · EN</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO WITH LIVE INTERACTIVE PC + AMOLED PHONE DEMO -->
+    <section id="hero-section" class="shell hero" aria-labelledby="headline">
+      <div class="intro">
+        <p class="label" data-i18n="hero_eyebrow">WINDOWS 10/11 · EXTENSIÓN MV3 · PWA MÓVIL AMOLED</p>
+        <h1 id="headline">
+          <span data-i18n="hero_title_1">Tu Chrome y tu PC,</span><br />
+          <span data-i18n="hero_title_2">bajo </span><em data-i18n="hero_title_em">tu pulgar.</em>
+        </h1>
+        <p data-i18n="hero_desc">
+          Controla pestañas abiertas en vivo, adelanta o salta intros en YouTube y Netflix, mueve el cursor a menos de 20 ms, dicta con tu voz y espía tu pantalla desde Android o iPhone escaneando un código QR.
+        </p>
+        <div class="cta-row">
+          <a
+            class="button"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.0.0.zip"
+            data-dl-link
+            data-i18n="hero_cta"
+          >
+            Descargar para Windows
+          </a>
+          <a class="button-ghost" href="#instalacion" data-i18n="hero_secondary">Cómo instalar</a>
+        </div>
+        <ul class="trust-badges" aria-label="Garantías técnicas">
+          <li data-i18n="badge_lat">✓ Latencia &lt; 20 ms en Wi-Fi</li>
+          <li data-i18n="badge_pwa">✓ Sin instalar apps de tiendas</li>
+          <li data-i18n="badge_priv">✓ 100% red local con PIN</li>
+        </ul>
+      </div>
+
+      <!-- Interactive Live Demo Stage (Container-queried + View Transitions) -->
+      <figure class="screen" aria-labelledby="demo-caption">
+        <div class="demo-switcher" role="group" aria-label="Cambiar escena de prueba">
+          <button type="button" class="demo-chip active" data-demo-scene="0" aria-pressed="true">
+            <span class="swatch swatch-1" aria-hidden="true"></span>
+            <span data-i18n="scene_cinema">Cine · YouTube 4K</span>
+          </button>
+          <button type="button" class="demo-chip" data-demo-scene="1" aria-pressed="false">
+            <span class="swatch swatch-2" aria-hidden="true"></span>
+            <span data-i18n="scene_tabs">12 Pestañas MV3</span>
+          </button>
+          <button type="button" class="demo-chip" data-demo-scene="2" aria-pressed="false">
+            <span class="swatch swatch-3" aria-hidden="true"></span>
+            <span data-i18n="scene_spy">Touchpad + Espiar PC</span>
+          </button>
+        </div>
+
+        <div class="showcase-stack">
+          <div id="demo-screen" class="screen-body">
+            <div class="screen-top">
+              <span id="demo-mode-label">PC · Puente Extensión Activo</span>
+              <div class="demo-mode-pills" role="group" aria-label="Módulo activo">
+                <button type="button" class="mini-mode-pill active" data-demo-view="media" aria-pressed="true">Media</button>
+                <button type="button" class="mini-mode-pill" data-demo-view="tabs" aria-pressed="false" data-i18n="view_tabs">Pestañas</button>
+                <button type="button" class="mini-mode-pill" data-demo-view="touch" aria-pressed="false">Touchpad</button>
+              </div>
+            </div>
+
+            <div class="pc-telemetry-row">
+              <span class="ping-pill"><b class="dot-live" aria-hidden="true"></b> <span id="demo-ping">4 ms · Wi-Fi Local</span></span>
+              <button id="demo-skip-btn" type="button" class="mock-tag active" aria-pressed="true" data-i18n="demo_skip_pill">⏭ Saltar Intro</button>
+            </div>
+
+            <div class="cover-row">
+              <div id="demo-cover" class="cover" aria-hidden="true">▶</div>
+              <div class="track-meta">
+                <strong id="demo-title">Cyberpunk Edgerunners · 4K HDR</strong>
+                <small id="demo-sub">youtube.com · Velocidad 1.0x · Subtítulos CC</small>
+              </div>
+            </div>
+
+            <div class="stage-status" aria-live="polite">
+              <span id="demo-status-main">Reproduciendo en pantalla completa · Volumen PC 80%</span>
+              <span id="demo-status-sub" class="sub-tr">Anuncio o intro detectado automáticamente listo para omitir</span>
+            </div>
+
+            <div class="screen-footer" aria-hidden="true">
+              <span id="demo-time-cur">14:20</span>
+              <i><b id="demo-bar-fill"></b></i>
+              <span id="demo-time-dur">24:10</span>
+            </div>
+          </div>
+
+          <!-- Companion Borderless AMOLED Mobile PWA Card -->
+          <div id="demo-phone" class="phone-mock" role="group" aria-label="Vista previa de PWA Móvil AMOLED">
+            <div class="phone-top">
+              <span class="dot-live" aria-hidden="true"></span>
+              <span data-i18n="phone_badge">PWA Móvil · AMOLED #000000</span>
+            </div>
+            <div id="phone-main" class="phone-lyric-main">Scrubber en vivo · -10s / +10s · PiP</div>
+            <div id="phone-sub" class="phone-lyric-sub" data-i18n="phone_sub">Chrome · Media · Touchpad · Pestañas · Sistema</div>
+            <div class="phone-controls">
+              <button type="button" id="demo-prev" class="phone-ctrl-btn" aria-label="Estado anterior"><span aria-hidden="true">⏮</span></button>
+              <button type="button" id="demo-play" class="phone-play" aria-pressed="true" aria-label="Reproducción automática de la demostración"><span id="demo-play-icon" aria-hidden="true">⏸</span></button>
+              <button type="button" id="demo-next" class="phone-ctrl-btn" aria-label="Siguiente estado"><span aria-hidden="true">⏭</span></button>
+            </div>
+          </div>
+        </div>
+        <figcaption id="demo-caption" data-i18n="hero_caption">✨ Toca las escenas de arriba o «⏭ Saltar Intro» para probar la respuesta instantánea</figcaption>
+      </figure>
+    </section>
+
+    <!-- CORE MODULES HIGHLIGHTS STRIP (CSS Subgrid aligned) -->
+    <section id="funciones" class="strip" aria-labelledby="feat-heading">
+      <div class="shell">
+        <h2 id="feat-heading" class="label section-label" data-i18n="feat_eyebrow">ARQUITECTURA HÍBRIDA DE 3 COMPONENTES</h2>
+        <div class="strip-inner grid-6">
+          <article class="feat-card reveal-card">
+            <span class="feat-tag" data-i18n="tag_mv3">EXTENSIÓN MV3</span>
+            <h3 data-i18n="f1_title">Gestor de Pestañas en Tiempo Real</h3>
+            <p data-i18n="f1_desc">Mira todas tus pestañas abiertas con su favicon, título y dominio aunque Chrome esté minimizado. Cambia, cierra, fija (Pin), duplica, silencia por pestaña o reabre cerradas con un toque.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag" data-i18n="tag_media">MULTIMEDIA</span>
+            <h3 data-i18n="f2_title">Scrubber Preciso y Saltar Intro</h3>
+            <p data-i18n="f2_desc">Controla YouTube, Netflix, Twitch, Disney+ y cualquier video HTML5 con barra deslizable en tiempo real, saltos de ±5s/10s/30s, velocidades, subtítulos, PiP y botón automático para omitir anuncios o intros.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag">&lt; 20 MS</span>
+            <h3 data-i18n="f3_title">Touchpad Multi-Touch Nativo</h3>
+            <p data-i18n="f3_desc">Motor directo sobre SendInput en Windows sin pausas artificiales: mueve el cursor con aceleración suave, arrastra elementos con doble toque, haz scroll a dos dedos y pellizca para hacer zoom.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag" data-i18n="tag_voice">TECLADO + VOZ</span>
+            <h3 data-i18n="f4_title">Escritura en Vivo, Dictado y Portapapeles</h3>
+            <p data-i18n="f4_desc">Escribe desde el teclado de tu teléfono con soporte completo para español (ñ, acentos y emojis), dicta búsquedas por micrófono y envía o trae el portapapeles de tu PC al instante.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag" data-i18n="tag_spy">INTERACTIVO</span>
+            <h3 data-i18n="f5_title">Modo «Espiar Pantalla» en Vivo</h3>
+            <p data-i18n="f5_desc">¿Estás lejos del monitor y no ves el cursor? Activa la vista previa ligera (5 a 15 FPS) directamente en tu celular y toca cualquier punto de la imagen transmitida para hacer clic exacto ahí.</p>
+          </article>
+
+          <article class="feat-card reveal-card">
+            <span class="feat-tag" data-i18n="tag_sys">SISTEMA</span>
+            <h3 data-i18n="f6_title">Macros, Sleep Timer y System Tray</h3>
+            <p data-i18n="f6_desc">Ejecuta escenas personalizadas (como «Modo Cine»), programa la suspensión o apagado en 30/60 minutos antes de dormir y administra el código QR y el PIN desde la bandeja de Windows.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- USE-CASE SCENARIOS ("TU SETUP") — Below-the-fold content-visibility + Subgrid -->
+    <section id="setup" class="shell setups deferred-section" aria-labelledby="setups-heading">
+      <p class="label" data-i18n="setups_eyebrow">DISEÑADO PARA UNA SOLA MANO</p>
+      <h2 id="setups-heading" data-i18n="setups_title">Control total desde cualquier rincón.</h2>
+      <div class="setups-grid">
+        <article class="setup-card reveal-card">
+          <div class="setup-icon" aria-hidden="true">🍿</div>
+          <h3 data-i18n="s1_title">Desde tu cama o sillón</h3>
+          <p data-i18n="s1_desc">Lanza «Modo Cine» en 1 toque: abre YouTube, sube el volumen maestro al 80%, salta el anuncio cuando aparezca y programa el Sleep Timer para que la PC se suspenda sola al terminar la película.</p>
+        </article>
+        <article class="setup-card reveal-card">
+          <div class="setup-icon" aria-hidden="true">🖥️</div>
+          <h3 data-i18n="s2_title">Multitarea con Segundo Monitor</h3>
+          <p data-i18n="s2_desc">Cambia de canción, pausa un stream o silencia una pestaña ruidosa de Chrome desde tu celular sin hacer Alt+Tab ni salir de tu programa o partida a pantalla completa.</p>
+        </article>
+        <article class="setup-card reveal-card">
+          <div class="setup-icon" aria-hidden="true">🎤</div>
+          <h3 data-i18n="s3_title">Presentaciones y Estudio</h3>
+          <p data-i18n="s3_desc">Avanza diapositivas web, haz zoom en páginas, busca texto con Ctrl+F o abre tus marcadores favoritos caminando por el salón con la pantalla encendida gracias a Wake Lock.</p>
+        </article>
+        <article class="setup-card reveal-card">
+          <div class="setup-icon" aria-hidden="true">🌙</div>
+          <h3 data-i18n="s4_title">Habitaciones Oscuras (AMOLED)</h3>
+          <p data-i18n="s4_desc">Su interfaz negro puro (#000000) con vibración háptica sutil cuida tu vista de noche y ahorra batería en pantallas OLED de Android y iPhone.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- MODES COMPARISON: INSTANT FALLBACK VS DEEP MV3 BRIDGE -->
+    <section id="arquitectura" class="shell editions deferred-section" aria-labelledby="editions-heading">
+      <div class="editions-head">
+        <p class="label" data-i18n="ed_eyebrow">RESILIENCIA Y PROFUNDIDAD</p>
+        <h2 id="editions-heading" data-i18n="ed_title">Funciona al instante, brilla con la extensión.</h2>
+        <p data-i18n="ed_sub">Ambos modos vienen incluidos gratis en la misma descarga y cambian automáticamente sin configurar nada.</p>
+      </div>
+
+      <div class="editions-grid">
+        <article class="plan-card reveal-card">
+          <div class="plan-top">
+            <div>
+              <h3 data-i18n="ed_base_name">Modo Directo OS</h3>
+            </div>
+            <span class="plan-price" data-i18n="ed_auto">Inmediato</span>
+          </div>
+          <ul class="plan-list">
+            <li data-i18n="ed_b1">Touchpad de baja latencia (&lt;20 ms), scroll a 2 dedos, arrastrar y zoom</li>
+            <li data-i18n="ed_b2">Teclado en vivo en español (ñ, acentos, emojis) y dictado por voz</li>
+            <li data-i18n="ed_b3">Volumen maestro de Windows/macOS/Linux y portapapeles bidireccional</li>
+            <li data-i18n="ed_b4">Modo «Espiar Pantalla» interactivo, Macros y Sleep Timer</li>
+            <li data-i18n="ed_b5">Fallback automático de atajos para navegar y controlar videos sin extensión</li>
+          </ul>
+        </article>
+
+        <article class="plan-card plan-pro reveal-card">
+          <div class="plan-top">
+            <div>
+              <span class="pro-pill" data-i18n="pro_pill">INCLUIDO EN LA CARPETA</span>
+              <h3 data-i18n="ed_pro_name">+ Puente Extensión Chrome MV3</h3>
+            </div>
+            <span class="plan-price">Total</span>
+          </div>
+          <ul class="plan-list">
+            <li data-i18n="ed_p1">Lista en vivo de todas tus pestañas y ventanas con favicon, audio y Pin</li>
+            <li data-i18n="ed_p2">Controla Chrome aunque esté minimizado o detrás de otra aplicación</li>
+            <li data-i18n="ed_p3">Barra de progreso (Scrubber) exacta al segundo, PiP, modo Teatro y velocidades</li>
+            <li data-i18n="ed_p4">Detección automática de botón «Saltar Intro / Anuncio» en YouTube y Netflix</li>
+            <li data-i18n="ed_p5">Explorador directo de Marcadores, Historial reciente y Descargas en tu celular</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- INSTALLATION STEPS + DECLARATIVE COPY COMMAND BUTTON -->
+    <section id="instalacion" class="shell install deferred-section" aria-labelledby="install-heading">
+      <div>
+        <p class="label" data-i18n="inst_eyebrow">PUESTA EN MARCHA · 60 SEGUNDOS</p>
+        <h2 id="install-heading">
+          <span data-i18n="inst_title_1">De la descarga</span><br />
+          <span data-i18n="inst_title_2">al código QR en tu pantalla.</span>
+        </h2>
+        <p data-i18n="inst_sub">No necesitas cuentas en la nube ni instalar nada desde Google Play o App Store.</p>
+
+        <!-- Accessible Declarative Copy Snippet (per copy-button guide) -->
+        <div class="cmd-card copyable">
+          <span class="copy">
+            <button
+              type="button"
+              class="copy-button"
+              command="--copy"
+              commandfor="install-cmd"
+              aria-label="Copiar comando rápido de terminal"
+            >
+              <span class="copy-icon" aria-hidden="true"></span>
+            </button>
+            <span class="tip" role="status"></span>
+          </span>
+          <pre tabindex="0"><code id="install-cmd">git clone https://github.com/raults32/ChromeRemoteControl.git
+cd ChromeRemoteControl &amp;&amp; .\start.bat</code></pre>
+        </div>
+      </div>
+
+      <ol>
+        <li>
+          <h3 data-i18n="step1_title">Extrae y abre start.bat</h3>
+          <p data-i18n="step1_desc">Descarga el paquete oficial para Windows, descomprímelo y ejecuta start.bat (o ./start.sh en macOS/Linux). El script prepara el entorno automáticamente e inicia el icono en la bandeja del sistema junto al reloj.</p>
+        </li>
+        <li>
+          <h3 data-i18n="step2_title">Carga el puente en Google Chrome</h3>
+          <p data-i18n="step2_desc">Abre chrome://extensions, activa el «Modo de desarrollador» arriba a la derecha, haz clic en «Cargar descomprimida» y selecciona la carpeta chrome-extension incluida. Verás el indicador ON al instante.</p>
+        </li>
+        <li>
+          <h3 data-i18n="step3_title">Escanea el código QR desde tu celular</h3>
+          <p data-i18n="step3_desc">Con tu teléfono en la misma red Wi-Fi, escanea el código QR mostrado en consola o desde el menú «Ver Código QR y PIN» en la bandeja del sistema. Tu sesión quedará autorizada de forma persistente.</p>
+        </li>
+        <li>
+          <h3 data-i18n="step4_title">Añádelo a tu pantalla de inicio (PWA)</h3>
+          <p data-i18n="step4_desc">En Chrome (Android) toca «Instalar aplicación» y en Safari (iPhone) toca «Compartir → Agregar a inicio» para abrir tu control remoto a pantalla completa como app independiente.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- FAQ ACCORDION (Native details::details-content + Invoker command Expand/Collapse All) -->
+    <section id="faq" class="shell faq-section deferred-section" aria-labelledby="faq-heading">
+      <div class="faq-head">
+        <div>
+          <p class="label" data-i18n="faq_eyebrow">PREGUNTAS FRECUENTES</p>
+          <h2 id="faq-heading" data-i18n="faq_title">Todo claro antes de descargar.</h2>
+        </div>
+        <button
+          type="button"
+          class="faq-toggle-all"
+          commandfor="faq-accordion"
+          command="--toggle-all"
+          aria-expanded="false"
+        >
+          <span class="expand" data-i18n="faq_expand_all">Expandir todo</span>
+          <span class="collapse" data-i18n="faq_collapse_all">Contraer todo</span>
+        </button>
+      </div>
+
+      <div id="faq-accordion" class="faq-list">
+        <details class="faq-item">
+          <summary data-i18n="q1">¿Mis datos o mi pantalla pasan por servidores en internet?</summary>
+          <p data-i18n="a1">Nunca. Toda la comunicación WebSocket viaja exclusivamente dentro de tu propia red Wi-Fi local entre tu celular y tu computadora, protegida por PIN dinámico y tokens de sesión locales.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="q2">¿Qué pasa si uso otro navegador o aún no instalo la extensión?</summary>
+          <p data-i18n="a2">El backend detecta automáticamente si la extensión no está conectada y activa el modo resiliente por atajos de sistema operativo, manteniendo operativos el touchpad, teclado, audio, pantalla, navegación y controles básicos de reproducción.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="q3">¿Consume CPU la función «Espiar Pantalla» cuando no la estoy viendo?</summary>
+          <p data-i18n="a3">Cero por ciento. El capturador de pantalla permanece completamente dormido y solo captura cuadros comprimidos mientras tienes abierto el visor «Espiar PC» en tu teléfono.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="q4">¿Qué requisitos necesito en mi PC y celular?</summary>
+          <p data-i18n="a4">En tu PC solo necesitas Python 3.11+ (la interfaz PWA ya viene compilada lista para servir en el paquete de descarga). En tu celular funciona cualquier navegador moderno en Android o iOS conectado al mismo Wi-Fi.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD CTA -->
+    <section id="descarga" class="shell download deferred-section" aria-labelledby="dl-heading">
+      <div class="download-copy">
+        <p class="label">RELEASE v1.0.0 · WINDOWS / MACOS / LINUX</p>
+        <h2 id="dl-heading" data-i18n="dl_title">Chrome Remote Control v1.0</h2>
+        <p data-i18n="dl_desc">Paquete completo listo para iniciar con servidor FastAPI, interfaz PWA AMOLED precompilada, extensión Manifest V3 e icono de bandeja del sistema.</p>
+        <div class="cta-row">
+          <a
+            class="button"
+            href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.0.0.zip"
+            data-dl-link
+            data-i18n="dl_btn"
+          >
+            Descargar paquete (v1.0.0)
+          </a>
+          <a class="secondary" href="https://github.com/raults32/ChromeRemoteControl/releases" data-i18n="dl_versions">
+            Ver notas de versión en GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell footer">
+    <span>Chrome Remote Control v1.0</span>
+    <span data-i18n="footer_right">Código abierto para Windows, macOS y Linux · Español &amp; English</span>
+  </footer>
+</body>
+</html>

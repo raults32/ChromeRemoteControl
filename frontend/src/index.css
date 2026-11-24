@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --accent-color: #22d3ee;
+  --brand-color: #22d3ee;
+  --bg-amoled: #000000;
+  --bg-surface: #121212;
+  --bg-elevated: #1a1a1e;
+  --scrollbar-track: #0a0a0c;
+  --scrollbar-thumb: #3f3f46;
+  --target-size: 24px;
+  accent-color: var(--accent-color);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+@media (pointer: coarse) {
+  :root {
+    --target-size: 44px;
+  }
+}
+
+html {
+  background-color: #000000;
+  color: #f4f4f5;
+  scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  scroll-padding-top: calc(3.5rem + env(safe-area-inset-top, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100dvh;
+  background-color: #000000;
+  color: #f4f4f5;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: break-word;
+  user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+img,
+video {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+:where(a, code) {
+  overflow-wrap: anywhere;
+}
+
+:where(
+    button,
+    select,
+    textarea,
+    input:not([type="checkbox"], [type="radio"]),
+    [role="button"],
+    nav a,
+    label:has(input[type="checkbox"], input[type="radio"])
+  ) {
+  min-block-size: var(--target-size);
+  min-inline-size: var(--target-size);
+}
+
+/* Safe-area edge-to-edge layout bars */
+.safe-top-bar {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+.safe-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding-bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+}
+
+/* Native modal dialog scroll containment (per modern-web-guidance dialog spec) */
+dialog {
+  border: 1px solid #27272a;
+  border-radius: 1.25rem;
+  background-color: #121212;
+  color: #f4f4f5;
+  padding: 1.25rem;
+  max-inline-size: min(26rem, calc(100vw - 2rem));
+  inline-size: 100%;
+}
+
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+/* Legacy scrollbar fallback only where scrollbar-color is unsupported */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+}
+
+/* Fallback for older browsers without accent-color */
+@supports not (accent-color: #22d3ee) {
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background: #27272a;
+    border-radius: 4px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: var(--brand-color, #22d3ee);
+    margin-top: -5px;
+  }
+}

@@ -1,0 +1,19 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+**/__pycache__/
+.pytest_cache/
+*.pyc
+backend/config.json
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Build & Archives
+release_stage/
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
