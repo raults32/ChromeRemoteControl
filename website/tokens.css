@@ -1,0 +1,164 @@
+/* ==========================================================================
+   Chrome Remote Control — Three-Layer Design Tokens
+   Architecture: Primitive -> Semantic -> Component (per design-system skill)
+   ========================================================================== */
+
+@layer tokens {
+  /* === LAYER 1: PRIMITIVE TOKENS (Raw Values) === */
+  :root {
+    /* Palette — Deep OLED & Midnight Slate */
+    --primitive-oled-black: #000000;
+    --primitive-slate-975: #05080f;
+    --primitive-slate-950: #080b12;
+    --primitive-slate-925: #0b111e;
+    --primitive-slate-900: #0e131f;
+    --primitive-slate-850: #121929;
+    --primitive-slate-800: #172033;
+    --primitive-slate-700: #1e293b;
+    --primitive-slate-600: #2d4c5e;
+
+    /* Palette — Foregrounds (WCAG AAA on Slate-950) */
+    --primitive-ice-50: #ffffff;
+    --primitive-ice-100: #f1f6ff;
+    --primitive-ice-200: #d6ecff;
+    --primitive-ice-300: #a8b5cc;
+    --primitive-ice-400: #8696b0;
+
+    /* Palette — Vibrant Neon Telemetry Accents */
+    --primitive-cyan-200: #a5f3fc;
+    --primitive-cyan-300: #67e8f9;
+    --primitive-cyan-400: #22d3ee;
+    --primitive-cyan-950: #04131a;
+    --primitive-sky-400: #38bdf8;
+    --primitive-indigo-400: #818cf8;
+    --primitive-violet-400: #a78bfa;
+    --primitive-emerald-400: #34d399;
+    --primitive-emerald-500: #10b981;
+    --primitive-amber-200: #fde68a;
+    --primitive-amber-400: #fbbf24;
+    --primitive-amber-500: #f59e0b;
+
+    /* Spacing Scale (4px / 8px Rhythm) */
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+    --space-10: 2.5rem;   /* 40px */
+    --space-12: 3rem;     /* 48px */
+    --space-16: 4rem;     /* 64px */
+    --space-20: 5rem;     /* 80px */
+
+    /* Typography Families & Scale */
+    --primitive-font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --primitive-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+    /* Radii */
+    --radius-xs: 0.375rem; /* 6px */
+    --radius-sm: 0.55rem;  /* 8.8px */
+    --radius-md: 0.75rem;  /* 12px */
+    --radius-lg: 1rem;     /* 16px */
+    --radius-xl: 1.25rem;  /* 20px */
+    --radius-2xl: 1.4rem;  /* 22.4px */
+    --radius-pill: 999px;
+
+    /* Motion Timing & Easing */
+    --duration-instant: 110ms;
+    --duration-fast: 160ms;
+    --duration-normal: 240ms;
+    --duration-slow: 450ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Elevations */
+    --shadow-sm: 0 2px 8px rgb(0 0 0 / 0.32);
+    --shadow-md: 0 12px 32px rgb(0 0 0 / 0.44);
+    --shadow-lg: 0 22px 56px rgb(0 0 0 / 0.56);
+    --shadow-glow-cyan: 0 10px 30px rgb(34 211 238 / 0.28);
+  }
+
+  /* === LAYER 2: SEMANTIC TOKENS (Purpose Aliases) === */
+  :root {
+    --color-background: var(--primitive-slate-950);
+    --color-amoled: var(--primitive-oled-black);
+    --color-surface: var(--primitive-slate-900);
+    --color-surface-elevated: var(--primitive-slate-850);
+    --color-surface-code: var(--primitive-slate-975);
+    --color-surface-stage: var(--primitive-slate-925);
+
+    --color-foreground: var(--primitive-ice-100);
+    --color-foreground-strong: var(--primitive-ice-50);
+    --color-muted-foreground: var(--primitive-ice-300);
+    --color-subtle-foreground: var(--primitive-ice-400);
+    --color-code-foreground: var(--primitive-ice-200);
+
+    --color-primary: var(--primitive-cyan-400);
+    --color-primary-bright: var(--primitive-cyan-300);
+    --color-primary-hover: var(--primitive-cyan-200);
+    --color-on-primary: var(--primitive-cyan-950);
+
+    --color-secondary: var(--primitive-sky-400);
+    --color-accent-indigo: var(--primitive-indigo-400);
+    --color-accent-violet: var(--primitive-violet-400);
+    --color-success: var(--primitive-emerald-400);
+    --color-warning: var(--primitive-amber-400);
+    --color-warning-strong: var(--primitive-amber-500);
+    --color-warning-border: var(--primitive-amber-200);
+
+    --color-border: var(--primitive-slate-700);
+    --color-border-accent: var(--primitive-slate-600);
+    --color-focus-ring: var(--primitive-cyan-400);
+
+    --color-scrollbar-track: var(--primitive-slate-975);
+    --color-scrollbar-thumb: var(--primitive-slate-600);
+
+    --font-sans: var(--primitive-font-sans);
+    --font-mono: var(--primitive-font-mono);
+
+    /* Icon Sizing Tokens (per ui-ux-pro-max pro-rules) */
+    --icon-xs: 0.875rem; /* 14px */
+    --icon-sm: 1rem;     /* 16px */
+    --icon-md: 1.25rem;  /* 20px */
+    --icon-lg: 1.5rem;   /* 24px */
+
+    /* Legacy compatibility aliases */
+    --bg: var(--color-background);
+    --surface: var(--color-surface);
+    --card: var(--color-surface-elevated);
+    --ink: var(--color-foreground);
+    --fade: var(--color-muted-foreground);
+    --line: var(--color-border);
+    --cyan: var(--color-primary);
+    --blue: var(--color-secondary);
+    --emerald: var(--color-success);
+    --violet: var(--color-accent-violet);
+    --sans: var(--font-sans);
+    --mono: var(--font-mono);
+  }
+
+  /* === LAYER 3: COMPONENT TOKENS === */
+  :root {
+    --header-height: var(--space-20);
+    --header-bg-stuck: color-mix(in oklab, var(--color-background) 86%, transparent);
+
+    --button-primary-bg: linear-gradient(135deg var(--in-oklab), var(--color-primary-bright), var(--color-primary));
+    --button-primary-hover-bg: linear-gradient(135deg var(--in-oklab), var(--color-primary-hover), var(--color-secondary));
+    --button-primary-fg: var(--color-on-primary);
+    --button-radius: var(--radius-md);
+    --button-min-height: var(--space-12);
+
+    --card-bg: var(--color-surface);
+    --card-elevated-bg: var(--color-surface-elevated);
+    --card-border: var(--color-border);
+    --card-border-hover: color-mix(in oklab, var(--color-primary) 42%, var(--color-border));
+    --card-radius: var(--radius-xl);
+    --card-padding: var(--space-6);
+
+    --icon-badge-size: 2.75rem;
+    --icon-badge-radius: var(--radius-md);
+    --icon-badge-bg: color-mix(in oklab, var(--color-primary) 12%, var(--color-surface-elevated));
+    --icon-badge-border: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+  }
+}

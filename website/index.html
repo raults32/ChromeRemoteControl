@@ -29,13 +29,9 @@
   <script defer src="site.js"></script>
 </head>
 <body>
-  <!-- Decorative scroll-driven reading progress bar -->
   <div id="scroll-progress" class="scroll-progress"></div>
-
-  <!-- Dynamic Ambient OKLab Page Aura reacting to the live demo stage -->
   <div id="page-aura" class="page-aura" aria-hidden="true"></div>
 
-  <!-- State-aware sticky header + measured responsive navbar -->
   <header class="site-header sticky-header-container">
     <div class="nav-surface">
       <div class="shell header-inner">
@@ -59,11 +55,17 @@
 
           <ul id="site-menu" class="site-menu" popover="auto">
             <li><a href="#features">Features</a></li>
+            <li><a href="#setups">Use Cases</a></li>
             <li><a href="#modes">Dual Mode</a></li>
             <li><a href="#setup-guide">Setup</a></li>
             <li><a href="#faq">FAQ</a></li>
-            <li><a href="../app/">Web Remote</a></li>
             <li><a href="https://github.com/raults32/ChromeRemoteControl" target="_blank" rel="noopener">GitHub</a></li>
+            <li>
+              <a class="nav-cta-pill" href="../app/">
+                <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                <span>Web Remote</span>
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
@@ -71,10 +73,12 @@
   </header>
 
   <main>
-    <!-- HERO WITH LIVE INTERACTIVE PC + AMOLED PHONE DEMO -->
     <section id="hero-section" class="shell hero" aria-labelledby="headline">
       <div class="intro">
-        <p class="label">INSTANT EXTENSION QR · WEBRTC P2P · OPTIONAL SILENT WINDOWS AGENT</p>
+        <p class="label">
+          <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>INSTANT EXTENSION QR · WEBRTC P2P · SILENT WINDOWS AGENT</span>
+        </p>
         <h1 id="headline">
           <span>Your Chrome &amp; PC,</span><br />
           <span>under </span><em>your thumb.</em>
@@ -88,24 +92,34 @@
             href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Extension-v1.1.0.zip"
             data-dl-link
           >
-            Download Chrome Extension
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Chrome Extension</span>
           </a>
           <a
             class="button-ghost"
             href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.1.0.zip"
             data-dl-link
           >
-            Full Windows Bundle
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Full Windows Bundle</span>
           </a>
         </div>
         <ul class="trust-badges" aria-label="Technical highlights">
-          <li>✓ QR built right into Chrome Extension</li>
-          <li>✓ Zero laptop scripts required</li>
-          <li>✓ Optional silent Windows autostart</li>
+          <li>
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>QR built right into Chrome Extension</span>
+          </li>
+          <li>
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>Zero laptop scripts required</span>
+          </li>
+          <li>
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>Optional silent Windows autostart</span>
+          </li>
         </ul>
       </div>
 
-      <!-- Interactive Live Demo Stage (Container-queried + View Transitions) -->
       <figure class="screen" aria-labelledby="demo-caption">
         <div class="demo-switcher" role="group" aria-label="Switch live demo scene">
           <button type="button" class="demo-chip active" data-demo-scene="0" aria-pressed="true">
@@ -125,7 +139,7 @@
         <div class="showcase-stack">
           <div id="demo-screen" class="screen-body">
             <div class="screen-top">
-              <span id="demo-mode-label">PC · Active Extension Bridge</span>
+              <span id="demo-mode-label">Chrome · Active Extension Bridge</span>
               <div class="demo-mode-pills" role="group" aria-label="Active module">
                 <button type="button" class="mini-mode-pill active" data-demo-view="media" aria-pressed="true">Media</button>
                 <button type="button" class="mini-mode-pill" data-demo-view="tabs" aria-pressed="false">Tabs</button>
@@ -134,12 +148,17 @@
             </div>
 
             <div class="pc-telemetry-row">
-              <span class="ping-pill"><b class="dot-live" aria-hidden="true"></b> <span id="demo-ping">3 ms · Local Wi-Fi</span></span>
-              <button id="demo-skip-btn" type="button" class="mock-tag active" aria-pressed="true">⏭ Skip Intro</button>
+              <span class="ping-pill"><b class="dot-live" aria-hidden="true"></b> <span id="demo-ping">3 ms · WebRTC P2P</span></span>
+              <button id="demo-skip-btn" type="button" class="mock-tag active" aria-pressed="true">
+                <svg class="svg-icon-xs" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4l10 8-10 8V4zm12 0h2v16h-2V4z"/></svg>
+                <span>Skip Intro</span>
+              </button>
             </div>
 
             <div class="cover-row">
-              <div id="demo-cover" class="cover" aria-hidden="true">▶</div>
+              <div id="demo-cover" class="cover" aria-hidden="true">
+                <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11-6.86a1 1 0 0 0 0-1.7l-11-6.86A1 1 0 0 0 8 5.14Z"/></svg>
+              </div>
               <div class="track-meta">
                 <strong id="demo-title">Cyberpunk Edgerunners · 4K HDR</strong>
                 <small id="demo-sub">youtube.com · Speed 1.0x · Captions CC</small>
@@ -147,7 +166,7 @@
             </div>
 
             <div class="stage-status" aria-live="polite">
-              <span id="demo-status-main">Playing in fullscreen · PC Master Volume 80%</span>
+              <span id="demo-status-main">Playing in fullscreen · Master Volume 80%</span>
               <span id="demo-status-sub" class="sub-tr">Intro automatically detected and ready to skip from your phone</span>
             </div>
 
@@ -158,7 +177,6 @@
             </div>
           </div>
 
-          <!-- Companion Borderless AMOLED Mobile PWA Card -->
           <div id="demo-phone" class="phone-mock" role="group" aria-label="Mobile AMOLED PWA preview">
             <div class="phone-top">
               <span class="dot-live" aria-hidden="true"></span>
@@ -167,89 +185,184 @@
             <div id="phone-main" class="phone-lyric-main">Live Scrubber · -10s / +10s · PiP</div>
             <div id="phone-sub" class="phone-lyric-sub">Chrome · Media · Touchpad · Tabs · System</div>
             <div class="phone-controls">
-              <button type="button" id="demo-prev" class="phone-ctrl-btn" aria-label="Previous demo state"><span aria-hidden="true">⏮</span></button>
-              <button type="button" id="demo-play" class="phone-play" aria-pressed="true" aria-label="Auto-cycle live demo"><span id="demo-play-icon" aria-hidden="true">⏸</span></button>
-              <button type="button" id="demo-next" class="phone-ctrl-btn" aria-label="Next demo state"><span aria-hidden="true">⏭</span></button>
+              <button type="button" id="demo-prev" class="phone-ctrl-btn" aria-label="Previous demo state">
+                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 20 9 12l10-8v16zM5 19h2V5H5v14z"/></svg>
+              </button>
+              <button type="button" id="demo-play" class="phone-play" aria-label="Pause live demo auto-cycle">
+                <span id="demo-play-icon" aria-hidden="true">
+                  <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                </span>
+              </button>
+              <button type="button" id="demo-next" class="phone-ctrl-btn" aria-label="Next demo state">
+                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m5 4 10 8-10 8V4zm12 1h2v14h-2V5z"/></svg>
+              </button>
             </div>
           </div>
         </div>
-        <figcaption id="demo-caption">✨ Tap the scenes above or «⏭ Skip Intro» to preview instant remote response</figcaption>
+        <figcaption id="demo-caption">
+          <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.6-6.4-2.1 2.1M8.7 15.3l-2.1 2.1m0-12.8 2.1 2.1m6.6 6.6 2.1 2.1"/></svg>
+          <span>Tap the scenes above or «Skip Intro» to preview instant remote response</span>
+        </figcaption>
       </figure>
     </section>
 
-    <!-- CORE MODULES HIGHLIGHTS STRIP -->
     <section id="features" class="strip" aria-labelledby="feat-heading">
       <div class="shell">
-        <h2 id="feat-heading" class="label section-label">DUAL WEBRTC + LOCAL OS ARCHITECTURE</h2>
-        <div class="strip-inner grid-6">
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">QR IN EXTENSION</span>
+        <div class="section-head-row">
+          <div>
+            <p class="label">DUAL WEBRTC + LOCAL OS ARCHITECTURE</p>
+            <h2 id="feat-heading">Engineered for instant zero-setup pairing.</h2>
+          </div>
+        </div>
+
+        <div class="bento-grid">
+          <article class="bento-card bento-span-7 reveal-card">
+            <div class="bento-top">
+              <span class="feat-tag">QR IN EXTENSION</span>
+              <div class="icon-badge" aria-hidden="true">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3"/></svg>
+              </div>
+            </div>
             <h3>1-Click Extension QR Pairing</h3>
-            <p>Click the Chrome toolbar icon and scan the QR code with your phone. Connects peer-to-peer over WebRTC with zero Python or terminal scripts needed on your laptop.</p>
+            <p>Click the Chrome toolbar icon and scan the QR code with your phone camera. Connects peer-to-peer over encrypted WebRTC DataChannels with zero Python or terminal scripts required on your laptop.</p>
+            <div class="bento-preview" aria-hidden="true">
+              <div class="qr-mini-preview">
+                <svg class="qr-svg-tile" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9-2h3v3h-3v-3zm4 0h3v2h-3v-2zm-4 4h2v3h-2v-3zm3 1h4v2h-4v-2z"/></svg>
+                <div class="qr-mini-meta">
+                  <strong>ROOM 4829-7310 · DTLS P2P</strong>
+                  <span>Scan once → Auto-reconnects from your phone Home Screen forever</span>
+                </div>
+              </div>
+            </div>
           </article>
 
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">MV3 TABS</span>
+          <article class="bento-card bento-span-5 reveal-card">
+            <div class="bento-top">
+              <span class="feat-tag">MV3 TABS</span>
+              <div class="icon-badge icon-badge-indigo" aria-hidden="true">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+              </div>
+            </div>
             <h3>Real-Time Tab &amp; Window Manager</h3>
-            <p>View every open Chrome tab with its live favicon, title, and audio state even while Chrome is minimized. Switch, close, pin, duplicate, mute, or reopen tabs in one tap.</p>
+            <p>View every open Chrome tab with live audio and pin states—even while Chrome is minimized behind a game.</p>
+            <div class="bento-preview" aria-hidden="true">
+              <div class="tab-pills-preview">
+                <div class="mini-tab-row is-active-tab">
+                  <span class="mini-tab-left">youtube.com · 4K HDR</span>
+                  <span class="mini-tab-badge">AUDIBLE</span>
+                </div>
+                <div class="mini-tab-row">
+                  <span class="mini-tab-left">github.com · Pull Requests</span>
+                  <span>PINNED</span>
+                </div>
+              </div>
+            </div>
           </article>
 
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">MULTIMEDIA</span>
+          <article class="bento-card bento-span-4 reveal-card">
+            <div class="bento-top">
+              <span class="feat-tag">MULTIMEDIA</span>
+              <div class="icon-badge icon-badge-violet" aria-hidden="true">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              </div>
+            </div>
             <h3>Precision Scrubber &amp; Skip Intro</h3>
-            <p>Control YouTube, Netflix, Twitch, Disney+, and HTML5 video with a live timeline scrubber, ±5s/10s/30s jumps, playback speeds, captions, PiP, and smart Ad/Intro skipping.</p>
+            <p>Control YouTube, Netflix, Twitch, Disney+, and HTML5 video with a live timeline scrubber, ±5s/10s/30s jumps, playback speeds, captions, PiP, and 1-tap Ad/Intro skipping.</p>
           </article>
 
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">&lt; 15 MS</span>
+          <article class="bento-card bento-span-4 reveal-card">
+            <div class="bento-top">
+              <span class="feat-tag">&lt; 15 MS</span>
+              <div class="icon-badge icon-badge-emerald" aria-hidden="true">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="3" y1="14" x2="21" y2="14"/></svg>
+              </div>
+            </div>
             <h3>Dual Trackpad (In-Page &amp; Win32)</h3>
-            <p>Glide a glowing virtual cursor inside web pages with zero setup, or enable the silent Windows agent for full OS-wide Win32 SendInput desktop cursor control.</p>
+            <p>Glide a glowing virtual cursor inside web pages immediately, or enable the silent Windows agent for sub-2ms OS-wide cursor control.</p>
+            <div class="bento-preview" aria-hidden="true">
+              <div class="latency-bars">
+                <div class="lat-row">
+                  <span>Win32 Local</span>
+                  <span class="lat-track"><b class="lat-fill-fast"></b></span>
+                  <span>2 ms</span>
+                </div>
+                <div class="lat-row">
+                  <span>WebRTC P2P</span>
+                  <span class="lat-track"><b class="lat-fill-rtc"></b></span>
+                  <span>8 ms</span>
+                </div>
+              </div>
+            </div>
           </article>
 
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">INTERACTIVE</span>
-            <h3>Live «Screen Spy» Preview</h3>
-            <p>Sitting across the room? Stream live tab screenshots (or your full Windows desktop) straight to your phone and tap anywhere on the preview to click that exact spot.</p>
+          <article class="bento-card bento-span-4 reveal-card">
+            <div class="bento-top">
+              <span class="feat-tag">SCREEN SPY + OS</span>
+              <div class="icon-badge" aria-hidden="true">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+            </div>
+            <h3>Live Screen Spy &amp; Silent Agent</h3>
+            <p>Stream live tab or full-desktop previews to your phone and tap anywhere to click that spot. Run <code>install-silent-startup.bat</code> once for invisible Windows startup.</p>
           </article>
 
-          <article class="feat-card reveal-card">
-            <span class="feat-tag">SET &amp; FORGET</span>
-            <h3>Invisible Windows Auto-Start</h3>
-            <p>Want PC Shutdown, Sleep Timer &amp; Windows Master Volume? Run install-silent-startup.bat once—it starts invisibly with Windows (pythonw, zero console windows).</p>
-          </article>
+          <div class="telemetry-strip bento-span-12 reveal-card" role="region" aria-label="Performance metrics">
+            <div class="stat-cell">
+              <span class="stat-val">&lt; 15 ms</span>
+              <span class="stat-lbl">Local Wi-Fi / WebRTC RTT</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-val">0 Windows</span>
+              <span class="stat-lbl">Silent pythonw Background Agent</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-val">0% CPU</span>
+              <span class="stat-lbl">Idle Overhead When Screen Spy Off</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-val">#000000</span>
+              <span class="stat-lbl">True Black AMOLED Battery Saver</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- USE-CASE SCENARIOS -->
     <section id="setups" class="shell setups deferred-section" aria-labelledby="setups-heading">
       <p class="label">ERGONOMIC ONE-HANDED UX</p>
       <h2 id="setups-heading">Total control from anywhere in the room.</h2>
       <div class="setups-grid">
         <article class="setup-card reveal-card">
-          <div class="setup-icon" aria-hidden="true">🍿</div>
+          <div class="icon-badge" aria-hidden="true">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          </div>
           <h3>From Your Couch or Bed</h3>
           <p>Tap «Cinema Mode»: launch Netflix, adjust volume, skip intros automatically, and set a 45-minute Sleep Timer that pauses playback or suspends your PC when you fall asleep.</p>
         </article>
         <article class="setup-card reveal-card">
-          <div class="setup-icon" aria-hidden="true">⚡</div>
+          <div class="icon-badge icon-badge-emerald" aria-hidden="true">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
           <h3>Persistent Phone Pairing</h3>
           <p>Scan the QR code once and add the AMOLED Web App to your phone home screen. Next time you open it, your phone reconnects to Chrome automatically—no re-scanning needed.</p>
         </article>
         <article class="setup-card reveal-card">
-          <div class="setup-icon" aria-hidden="true">🖥️</div>
+          <div class="icon-badge icon-badge-indigo" aria-hidden="true">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
           <h3>Second Monitor Multitasking</h3>
           <p>Switch tabs, pause a stream, or mute a noisy Chrome tab from your phone without pressing Alt+Tab or leaving your fullscreen game or editor.</p>
         </article>
         <article class="setup-card reveal-card">
-          <div class="setup-icon" aria-hidden="true">🌙</div>
+          <div class="icon-badge icon-badge-violet" aria-hidden="true">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </div>
           <h3>Dark Rooms (True AMOLED)</h3>
           <p>Pure black (#000000) surfaces and subtle haptic feedback protect your eyes in dark rooms while saving battery on OLED phones.</p>
         </article>
       </div>
     </section>
 
-    <!-- MODES COMPARISON -->
     <section id="modes" class="shell editions deferred-section" aria-labelledby="editions-heading">
       <div class="editions-head">
         <p class="label">CHOOSE YOUR DEPTH</p>
@@ -266,11 +379,26 @@
             <span class="plan-price">Zero PC Setup</span>
           </div>
           <ul class="plan-list">
-            <li>QR code &amp; Room PIN generated directly inside the Chrome Extension popup</li>
-            <li>Direct encrypted WebRTC P2P connection to the hosted HTTPS AMOLED PWA</li>
-            <li>Live open tabs, windows, bookmarks, history, downloads &amp; omnibox search</li>
-            <li>Full YouTube / Netflix / HTML5 scrubber, Skip Intro, captions, speeds &amp; PiP</li>
-            <li>In-page virtual cursor, 2-finger page scroll, live typing &amp; active tab Screen Spy</li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>QR code &amp; Room PIN generated directly inside the Chrome Extension popup</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Direct encrypted WebRTC P2P connection to the hosted HTTPS AMOLED PWA</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Live open tabs, windows, bookmarks, history, downloads &amp; omnibox search</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Full YouTube / Netflix / HTML5 scrubber, Skip Intro, captions, speeds &amp; PiP</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>In-page virtual cursor, 2-finger page scroll, live typing &amp; active tab Screen Spy</span>
+            </li>
           </ul>
         </article>
 
@@ -283,17 +411,31 @@
             <span class="plan-price">Full OS</span>
           </div>
           <ul class="plan-list">
-            <li>Runs invisibly on Windows login via pythonw.exe (zero black terminal windows)</li>
-            <li>Auto-detected by the Chrome Extension—upgrades your existing phone session live</li>
-            <li>Global OS-wide Win32 SendInput cursor outside Chrome across all desktop apps</li>
-            <li>Master Windows system volume (pycaw) &amp; full-desktop multi-monitor Screen Spy</li>
-            <li>Remote PC Lock, Sleep, Restart, Shut Down &amp; OS-level Sleep Timer</li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Runs invisibly on Windows login via pythonw.exe (zero black terminal windows)</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Auto-detected by the Chrome Extension—upgrades your existing phone session live</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Global OS-wide Win32 SendInput cursor outside Chrome across all desktop apps</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Master Windows system volume (pycaw) &amp; full-desktop multi-monitor Screen Spy</span>
+            </li>
+            <li>
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Remote PC Lock, Sleep, Restart, Shut Down &amp; OS-level Sleep Timer</span>
+            </li>
           </ul>
         </article>
       </div>
     </section>
 
-    <!-- INSTALLATION STEPS -->
     <section id="setup-guide" class="shell install deferred-section" aria-labelledby="install-heading">
       <div>
         <p class="label">QUICK START · 20 SECONDS</p>
@@ -341,7 +483,6 @@ cd ChromeRemoteControl &amp;&amp; .\install-silent-startup.bat</code></pre>
       </ol>
     </section>
 
-    <!-- FAQ ACCORDION -->
     <section id="faq" class="shell faq-section deferred-section" aria-labelledby="faq-heading">
       <div class="faq-head">
         <div>
@@ -380,7 +521,6 @@ cd ChromeRemoteControl &amp;&amp; .\install-silent-startup.bat</code></pre>
       </div>
     </section>
 
-    <!-- DOWNLOAD CTA -->
     <section id="download" class="shell download deferred-section" aria-labelledby="dl-heading">
       <div class="download-copy">
         <p class="label">RELEASE v1.1.0 · CHROME / WINDOWS / MACOS / LINUX</p>
@@ -392,17 +532,20 @@ cd ChromeRemoteControl &amp;&amp; .\install-silent-startup.bat</code></pre>
             href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Extension-v1.1.0.zip"
             data-dl-link
           >
-            Extension Only (Zero Setup)
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Extension Only (Zero Setup)</span>
           </a>
           <a
-            class="secondary"
+            class="secondary-btn"
             href="https://github.com/raults32/ChromeRemoteControl/releases/latest/download/ChromeRemoteControl-Windows-v1.1.0.zip"
             data-dl-link
           >
-            Full Windows Bundle (v1.1.0)
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Full Windows Bundle (v1.1.0)</span>
           </a>
-          <a class="secondary" href="../app/">
-            Open Web Remote App →
+          <a class="secondary-btn" href="../app/">
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+            <span>Open Web Remote App</span>
           </a>
         </div>
       </div>

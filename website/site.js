@@ -1,36 +1,44 @@
-// Chrome Remote Control v1.0 — Modern Web Landing Script
-// (Interactive PC/PWA Stage + Measured Popover Navbar + Declarative Copy & FAQ Fallbacks)
+// Chrome Remote Control v1.1 — Landing Experience Script
+// Built with ui-ux-pro-max, design-system, and modern-web-guidance (SVG-only icons, accessible motion controls)
 
 if (!Object.hasOwn(HTMLElement.prototype, 'popover')) {
   import('https://unpkg.com/@oddbird/popover-polyfill@latest/dist/popover.min.js').catch(() => {});
 }
 
+const SVG_ICONS = {
+  play: '<svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11-6.86a1 1 0 0 0 0-1.7l-11-6.86A1 1 0 0 0 8 5.14Z"/></svg>',
+  pause: '<svg class="svg-icon-sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  playSmall: '<svg class="svg-icon-sm" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11-6.86a1 1 0 0 0 0-1.7l-11-6.86A1 1 0 0 0 8 5.14Z"/></svg>',
+  layers: '<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>',
+  crosshair: '<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>'
+};
+
 const DEMO_SCENES = [
   {
-    icon: '▶',
+    iconKey: 'play',
     c1: '34 211 238',
     c2: '59 130 246',
     c3: '52 211 153',
-    ping: '3 ms · Local Wi-Fi',
+    ping: '3 ms · WebRTC P2P',
     dur: '24:10',
     title: 'Cyberpunk Edgerunners · 4K HDR',
     sub: 'youtube.com · Speed 1.0x · Captions CC',
     phone: 'Live Scrubber · -10s / +10s · PiP',
     states: [
       {
-        main: 'Playing in fullscreen · PC Master Volume 80%',
+        main: 'Playing in fullscreen · Master Volume 80%',
         sub: 'Intro automatically detected and ready to skip from your phone',
         cur: '02:14',
         pct: 18
       },
       {
-        main: 'Intro skipped in 1 tap · Instant seek to exact timestamp',
-        sub: 'Continuous WebSocket sync via content_media.js',
+        main: 'Intro skipped in 1 tap · Exact timestamp sync',
+        sub: 'Continuous telemetry via MV3 content_media.js',
         cur: '14:20',
         pct: 59
       },
       {
-        main: 'Sleep Timer active · Sleep PC in 45m 00s',
+        main: 'Sleep Timer active · Auto-pause in 45m 00s',
         sub: 'True black AMOLED phone UI with zero eye strain',
         cur: '19:45',
         pct: 82
@@ -38,9 +46,9 @@ const DEMO_SCENES = [
     ]
   },
   {
-    icon: '⧉',
+    iconKey: 'layers',
     c1: '129 140 248',
-    c2: '192 132 252',
+    c2: '167 139 250',
     c3: '34 211 238',
     ping: '4 ms · MV3 Bridge',
     dur: '12 tabs',
@@ -49,51 +57,51 @@ const DEMO_SCENES = [
     phone: 'Switch · Mute tab · Pin · Reopen closed',
     states: [
       {
-        main: '🔊 YouTube Music tab muted individually in 1 tap',
-        sub: 'Your game or call audio continues uninterrupted',
+        main: 'YouTube Music tab muted individually in 1 tap',
+        sub: 'Your fullscreen game or call audio continues uninterrupted',
         cur: 'Tab 3/12',
         pct: 36
       },
       {
-        main: '📌 Notion, GitHub & Docs pinned and filtered instantly',
-        sub: 'Instant access to Bookmarks, History & Downloads',
+        main: 'Notion, GitHub & Docs pinned and filtered live',
+        sub: 'Instant mobile access to Bookmarks, History & Downloads',
         cur: 'Tab 7/12',
         pct: 64
       },
       {
-        main: '↺ Recently closed tab restored remotely',
-        sub: 'via chrome.sessions.restore() in Manifest V3',
+        main: 'Recently closed tab restored remotely',
+        sub: 'Powered by chrome.sessions.restore() in Manifest V3',
         cur: 'Tab 12/12',
         pct: 90
       }
     ]
   },
   {
-    icon: '⌖',
+    iconKey: 'crosshair',
     c1: '52 211 153',
     c2: '34 211 238',
     c3: '56 189 248',
-    ping: '2 ms · SendInput',
-    dur: '12 FPS',
+    ping: '2 ms · Dual Trackpad',
+    dur: 'Live Spy',
     title: 'Multi-Touch Trackpad + Screen Spy',
-    sub: '64-bit SendInput · Unicode / Emojis · Voice Dictation',
-    phone: '1 finger: Cursor · 2 fingers: Scroll/Zoom · Tap screen',
+    sub: 'In-Page Cursor & 64-bit Win32 SendInput · Voice Dictation',
+    phone: '1 finger: Cursor · 2 fingers: Scroll/Zoom · Tap preview',
     states: [
       {
-        main: 'Native cursor with sub-pixel precision (< 1 ms on PC)',
-        sub: 'Double-tap + drag to move windows and files effortlessly',
+        main: 'Sub-pixel cursor precision (< 2 ms on Windows)',
+        sub: 'Double-tap + slide to drag windows and elements effortlessly',
         cur: 'X:960',
         pct: 48
       },
       {
-        main: '🎤 Voice dictation: «Search FastAPI tutorial on YouTube»',
-        sub: 'Two-way clipboard sync between phone and computer',
+        main: 'Voice dictation: "Search FastAPI tutorial on YouTube"',
+        sub: 'Two-way clipboard sync between phone and browser',
         cur: 'Voice',
         pct: 72
       },
       {
-        main: '👁️ Live screen preview active with cursor indicator',
-        sub: 'Tap the live preview on your phone to click right there',
+        main: 'Live Screen Spy preview with tap-to-click',
+        sub: 'Tap anywhere on your phone preview to click that exact spot',
         cur: '1080p',
         pct: 88
       }
@@ -102,21 +110,38 @@ const DEMO_SCENES = [
 ];
 
 const VIEW_LABELS = {
-  media: 'PC · Active Extension Bridge',
-  tabs: 'PC · Chrome MV3 Manager',
-  touch: 'PC · Native SendInput Control'
+  media: 'Chrome · Active Extension Bridge',
+  tabs: 'Chrome · MV3 Tab Manager',
+  touch: 'Dual · Trackpad & Screen Spy'
 };
 
+const reducedMotionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 let sceneIdx = 0;
 let stepIdx = 0;
 let demoView = 'media';
-let demoPlaying = true;
+let demoPlaying = !reducedMotionQuery.matches;
 let demoHeroVisible = true;
+let demoStageInteracting = false;
 let skipActive = true;
 
+function syncPlayButtonUi() {
+  const playBtn = document.getElementById('demo-play');
+  const iconWrap = document.getElementById('demo-play-icon');
+  if (!playBtn || !iconWrap) return;
+  // Per modern-web-guidance motion §Accessibility: update accessible label between Pause/Play without aria-pressed
+  playBtn.setAttribute('aria-label', demoPlaying ? 'Pause live demo auto-cycle' : 'Play live demo auto-cycle');
+  iconWrap.innerHTML = demoPlaying ? SVG_ICONS.pause : SVG_ICONS.playSmall;
+}
+
+reducedMotionQuery.addEventListener('change', (e) => {
+  if (e.matches) {
+    demoPlaying = false;
+    syncPlayButtonUi();
+  }
+});
+
 function runWithViewTransition(updateFn) {
-  const allowMotion = matchMedia('(prefers-reduced-motion: no-preference)').matches;
-  if (!allowMotion || typeof document.startViewTransition !== 'function') {
+  if (reducedMotionQuery.matches || typeof document.startViewTransition !== 'function') {
     updateFn();
     return;
   }
@@ -137,7 +162,6 @@ function renderDemo() {
   };
 
   setTxt('demo-mode-label', VIEW_LABELS[demoView] || VIEW_LABELS.media);
-  setTxt('demo-cover', scene.icon);
   setTxt('demo-ping', scene.ping);
   setTxt('demo-title', scene.title);
   setTxt('demo-sub', scene.sub);
@@ -145,6 +169,11 @@ function renderDemo() {
   setTxt('phone-main', scene.phone);
   setTxt('demo-time-cur', st.cur);
   setTxt('demo-time-dur', scene.dur);
+
+  const coverEl = document.getElementById('demo-cover');
+  if (coverEl) {
+    coverEl.innerHTML = SVG_ICONS[scene.iconKey] || SVG_ICONS.play;
+  }
 
   const subEl = document.getElementById('demo-status-sub');
   if (subEl) {
@@ -206,11 +235,9 @@ document.getElementById('demo-skip-btn')?.addEventListener('click', (e) => {
   renderDemo();
 });
 
-document.getElementById('demo-play')?.addEventListener('click', (e) => {
+document.getElementById('demo-play')?.addEventListener('click', () => {
   demoPlaying = !demoPlaying;
-  e.currentTarget.setAttribute('aria-pressed', String(demoPlaying));
-  const icon = document.getElementById('demo-play-icon');
-  if (icon) icon.textContent = demoPlaying ? '⏸' : '▶';
+  syncPlayButtonUi();
 });
 
 document.getElementById('demo-next')?.addEventListener('click', () => {
@@ -223,8 +250,27 @@ document.getElementById('demo-prev')?.addEventListener('click', () => {
   renderDemo();
 });
 
+// Pause auto-rotation while user hovers or focuses inside the interactive demo stage
+const demoFigure = document.querySelector('.screen');
+if (demoFigure) {
+  demoFigure.addEventListener('pointerenter', () => {
+    demoStageInteracting = true;
+  });
+  demoFigure.addEventListener('pointerleave', () => {
+    demoStageInteracting = false;
+  });
+  demoFigure.addEventListener('focusin', () => {
+    demoStageInteracting = true;
+  });
+  demoFigure.addEventListener('focusout', (e) => {
+    if (!demoFigure.contains(e.relatedTarget)) {
+      demoStageInteracting = false;
+    }
+  });
+}
+
 // ============================================================================
-// Responsive Width-Measured Navbar (per modern-web-guidance navbar spec)
+// Responsive Width-Measured Navbar
 // ============================================================================
 const siteHeader = document.querySelector('.site-header');
 const headerInner = document.querySelector('.header-inner');
@@ -254,7 +300,7 @@ function syncNavbarLayout(force = false) {
       try {
         siteMenu.showPopover();
       } catch (_e) {
-        // Ignore if not yet ready
+        // Ignore
       }
     }
   } else {
@@ -283,7 +329,7 @@ siteMenu?.addEventListener('click', (e) => {
 });
 
 // ============================================================================
-// Declarative Copy Button + Async Clipboard + VoiceOver & Legacy Fallbacks
+// Declarative Copy Button + Async Clipboard + Legacy Fallback
 // ============================================================================
 const copyTimers = new WeakMap();
 let lastAnnouncedCopyMessage = '';
@@ -394,7 +440,7 @@ if (!CSS.supports('container-type', 'scroll-state') && 'IntersectionObserver' in
   });
 }
 
-if (!CSS.supports('animation-timeline', 'scroll()') && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+if (!CSS.supports('animation-timeline', 'scroll()') && !reducedMotionQuery.matches) {
   const progress = document.getElementById('scroll-progress');
   if (progress) {
     window.addEventListener(
@@ -450,10 +496,11 @@ document.addEventListener(
 );
 
 setInterval(() => {
-  if (!demoPlaying || !demoHeroVisible || document.hidden) return;
+  if (!demoPlaying || !demoHeroVisible || demoStageInteracting || document.hidden) return;
   stepIdx = (stepIdx + 1) % 3;
   renderDemo();
-}, 3400);
+}, 3600);
 
+syncPlayButtonUi();
 renderDemo();
 syncNavbarLayout(true);
